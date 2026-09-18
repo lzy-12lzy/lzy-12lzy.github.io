@@ -4,71 +4,661 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>我的网站</title>
+    <title>我的官方网站</title>
+    <meta name="description" content="这是我的个人官方网站">
 
     <style>
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Arial, "Microsoft YaHei", sans-serif;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                "Microsoft YaHei",
+                Arial,
+                sans-serif;
+            color: #1f2937;
+            background: #f8fafc;
+            line-height: 1.7;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ===== 顶部导航 ===== */
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .nav-container {
+            width: min(1100px, 92%);
+            margin: auto;
+            height: 72px;
             display: flex;
-            justify-content: center;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: #2563eb;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
             align-items: center;
         }
 
-        .box {
-            width: 90%;
-            max-width: 600px;
-            padding: 50px 30px;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        .nav-links a {
+            color: #4b5563;
+            font-size: 15px;
+            transition: 0.25s;
         }
 
-        h1 {
-            margin-bottom: 15px;
-            font-size: 42px;
+        .nav-links a:hover {
+            color: #2563eb;
         }
 
-        p {
-            color: #666;
-            font-size: 18px;
-            margin-bottom: 30px;
-        }
-
-        button {
-            border: 0;
-            padding: 14px 30px;
-            font-size: 16px;
-            color: white;
-            background: #667eea;
+        .nav-button {
+            padding: 10px 18px;
             border-radius: 10px;
-            cursor: pointer;
+            color: white !important;
+            background: #2563eb;
         }
 
-        button:hover {
+        .nav-button:hover {
+            background: #1d4ed8;
+        }
+
+        /* ===== 首页 ===== */
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 120px 20px 110px;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(96, 165, 250, 0.25), transparent 30%),
+                radial-gradient(circle at 85% 30%, rgba(167, 139, 250, 0.25), transparent 30%),
+                linear-gradient(135deg, #eff6ff, #f5f3ff);
+        }
+
+        .hero-container {
+            width: min(1100px, 92%);
+            margin: auto;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: clamp(42px, 6vw, 72px);
+            line-height: 1.1;
+            color: #111827;
+            margin-bottom: 24px;
+        }
+
+        .hero-text h1 span {
+            color: #2563eb;
+        }
+
+        .hero-text p {
+            max-width: 650px;
+            color: #64748b;
+            font-size: 19px;
+            margin-bottom: 35px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: 0.25s;
+        }
+
+        .btn-primary {
+            color: white;
+            background: #2563eb;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            color: #334155;
+            background: white;
+            border: 1px solid #dbe3ef;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            border-color: #94a3b8;
+        }
+
+        .hero-card {
+            min-height: 360px;
+            padding: 35px;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 25px 70px rgba(37, 99, 235, 0.12);
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .hero-card-badge {
+            display: inline-block;
+            width: fit-content;
+            margin-bottom: 20px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            color: #1d4ed8;
+            background: #dbeafe;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .hero-card h2 {
+            font-size: 30px;
+            margin-bottom: 15px;
+        }
+
+        .hero-card p {
+            color: #64748b;
+        }
+
+        /* ===== 通用区域 ===== */
+
+        .section {
+            padding: 100px 20px;
+        }
+
+        .section-container {
+            width: min(1100px, 92%);
+            margin: auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 55px;
+        }
+
+        .section-title span {
+            color: #2563eb;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .section-title h2 {
+            margin-top: 10px;
+            font-size: 40px;
+            color: #111827;
+        }
+
+        .section-title p {
+            max-width: 650px;
+            margin: 15px auto 0;
+            color: #64748b;
+        }
+
+        /* ===== 卡片 ===== */
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .card {
+            padding: 32px;
+            border-radius: 20px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+            transition: 0.25s;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+        }
+
+        .icon {
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            color: white;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            font-size: 22px;
+        }
+
+        .card h3 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .card p {
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        /* ===== 关于 ===== */
+
+        .about {
+            background: white;
+        }
+
+        .about-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .about-text h2 {
+            margin-bottom: 20px;
+            font-size: 38px;
+        }
+
+        .about-text p {
+            margin-bottom: 18px;
+            color: #64748b;
+        }
+
+        .about-list {
+            margin-top: 25px;
+        }
+
+        .about-list div {
+            margin-bottom: 12px;
+            color: #334155;
+        }
+
+        .about-visual {
+            min-height: 360px;
+            border-radius: 28px;
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(37, 99, 235, 0.9),
+                    rgba(124, 58, 237, 0.9)
+                );
+            box-shadow: 0 25px 70px rgba(37, 99, 235, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .about-visual h3 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .about-visual p {
             opacity: 0.85;
+        }
+
+        /* ===== 联系区域 ===== */
+
+        .contact {
+            text-align: center;
+        }
+
+        .contact-box {
+            padding: 60px 30px;
+            border-radius: 28px;
+            background: #111827;
+            color: white;
+        }
+
+        .contact-box h2 {
+            font-size: 38px;
+            margin-bottom: 15px;
+        }
+
+        .contact-box p {
+            max-width: 650px;
+            margin: 0 auto 30px;
+            color: #cbd5e1;
+        }
+
+        /* ===== 页脚 ===== */
+
+        footer {
+            padding: 30px 20px;
+            color: #94a3b8;
+            background: #0f172a;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* ===== 手机适配 ===== */
+
+        @media (max-width: 850px) {
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding-top: 80px;
+            }
+
+            .hero-container,
+            .about-box {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-card {
+                min-height: 280px;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title h2,
+            .about-text h2,
+            .contact-box h2 {
+                font-size: 32px;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <div class="box">
-        <h1>欢迎来到我的网站</h1>
+    <!-- 导航栏 -->
+    <header class="navbar">
+        <div class="nav-container">
 
-        <p>这是我的第一个正式网页。</p>
+            <a href="#" class="logo">
+                我的官网
+            </a>
 
-        <button onclick="alert('你好！欢迎来到我的网站！')">
-            点击我
-        </button>
-    </div>
+            <nav class="nav-links">
+                <a href="#home">首页</a>
+                <a href="#services">服务</a>
+                <a href="#about">关于</a>
+                <a href="#contact">联系</a>
+
+                <a href="#contact" class="nav-button">
+                    联系我
+                </a>
+            </nav>
+
+        </div>
+    </header>
+
+
+    <!-- 首页 -->
+    <section class="hero" id="home">
+
+        <div class="hero-container">
+
+            <div class="hero-text">
+
+                <h1>
+                    你好，欢迎来到
+                    <span>我的网站</span>
+                </h1>
+
+                <p>
+                    这里是我的官方网站。
+                    我会在这里分享我的项目、作品、服务以及最新动态。
+                </p>
+
+                <div class="hero-buttons">
+
+                    <a href="#services" class="btn btn-primary">
+                        查看内容
+                    </a>
+
+                    <a href="#about" class="btn btn-secondary">
+                        了解更多
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <div class="hero-card">
+
+                <span class="hero-card-badge">
+                    WELCOME
+                </span>
+
+                <h2>
+                    一个简单、现代的官方网站
+                </h2>
+
+                <p>
+                    这是网站首页的展示区域。
+                    以后可以在这里放置你的头像、图片、
+                    产品介绍、项目介绍或者其他内容。
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- 服务 -->
+    <section class="section" id="services">
+
+        <div class="section-container">
+
+            <div class="section-title">
+
+                <span>FEATURES</span>
+
+                <h2>
+                    网站内容
+                </h2>
+
+                <p>
+                    下面这些区域可以根据你的实际需求进行修改。
+                </p>
+
+            </div>
+
+
+            <div class="cards">
+
+                <div class="card">
+
+                    <div class="icon">
+                        01
+                    </div>
+
+                    <h3>
+                        我的项目
+                    </h3>
+
+                    <p>
+                        在这里展示你的项目、作品、程序或者其他内容。
+                    </p>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="icon">
+                        02
+                    </div>
+
+                    <h3>
+                        我的服务
+                    </h3>
+
+                    <p>
+                        可以介绍你提供的服务、功能或者产品。
+                    </p>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="icon">
+                        03
+                    </div>
+
+                    <h3>
+                        最新动态
+                    </h3>
+
+                    <p>
+                        可以在这里发布网站更新和最新消息。
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- 关于 -->
+    <section class="section about" id="about">
+
+        <div class="section-container">
+
+            <div class="about-box">
+
+                <div class="about-text">
+
+                    <h2>
+                        关于这个网站
+                    </h2>
+
+                    <p>
+                        这是我的个人网站，目前使用 GitHub Pages 免费托管。
+                    </p>
+
+                    <p>
+                        网站后面还可以继续加入更多页面和功能，
+                        例如登录系统、后台管理、数据库、留言功能等等。
+                    </p>
+
+                    <div class="about-list">
+
+                        <div>✓ 简洁现代的页面设计</div>
+                        <div>✓ 支持电脑和手机访问</div>
+                        <div>✓ 可以继续扩展更多功能</div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="about-visual">
+
+                    <div>
+
+                        <h3>
+                            START
+                        </h3>
+
+                        <p>
+                            从一个简单的网站开始，
+                            慢慢把它做成属于自己的完整网站。
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- 联系 -->
+    <section class="section contact" id="contact">
+
+        <div class="section-container">
+
+            <div class="contact-box">
+
+                <h2>
+                    联系我
+                </h2>
+
+                <p>
+                    这是联系区域。
+                    以后可以在这里加入邮箱、QQ、微信、
+                    联系表单或者其他联系方式。
+                </p>
+
+                <a
+                    href="mailto:example@example.com"
+                    class="btn btn-primary"
+                >
+                    发送邮件
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- 页脚 -->
+    <footer>
+
+        © 2026 我的官方网站 · All Rights Reserved.
+
+    </footer>
 
 </body>
 </html>

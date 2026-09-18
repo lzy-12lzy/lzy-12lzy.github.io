@@ -3,1254 +3,879 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#050816">
-<meta name="description" content="抓号器官网">
 <title>抓号器官网</title>
+<meta name="description" content="抓号器官网">
 
 <style>
-:root{
-    --bg:#050816;
-    --panel:rgba(255,255,255,.07);
-    --border:rgba(255,255,255,.12);
-    --text:#f8fafc;
-    --muted:#94a3b8;
-    --primary:#6366f1;
-    --secondary:#8b5cf6;
-    --ease:cubic-bezier(.22,1,.36,1);
+/* =========================================================
+   基础
+========================================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+html {
+    scroll-behavior: smooth;
 }
 
-html{
-    scroll-behavior:smooth;
+body {
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Microsoft YaHei",
+        Arial,
+        sans-serif;
+    background: #050816;
+    color: #fff;
+    overflow-x: hidden;
 }
 
-body{
-    min-height:100vh;
-    overflow-x:hidden;
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+::selection {
+    background: rgba(139, 92, 246, 0.35);
+}
+
+/* =========================================================
+   多层背景
+========================================================= */
+.background {
+    position: fixed;
+    inset: 0;
+    z-index: -5;
+    overflow: hidden;
     background:
-        radial-gradient(circle at 15% 20%,rgba(99,102,241,.18),transparent 28%),
-        radial-gradient(circle at 85% 70%,rgba(168,85,247,.15),transparent 30%),
-        linear-gradient(135deg,#050816,#0b1020,#111827);
-    color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif;
+        radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.25), transparent 28%),
+        radial-gradient(circle at 85% 70%, rgba(168, 85, 247, 0.20), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(37, 99, 235, 0.12), transparent 35%),
+        linear-gradient(135deg, #050816, #0b1020, #111827);
 }
 
-@media (pointer: fine) {
-    body, a, button, .btn, input, textarea, select, .nav-links a, .card, .stat, .glass-card {
-        cursor: none;
-    }
+.bg-grid {
+    position: absolute;
+    inset: -20%;
+    opacity: 0.22;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    transform: perspective(700px) rotateX(62deg) translateY(12%);
+    transform-origin: center bottom;
+    animation: gridDrift 24s linear infinite;
 }
 
-a{
-    color:inherit;
-    text-decoration:none;
+.bg-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.20;
+    will-change: transform;
 }
 
-/* ================= 自定义光标 ================= */
-.cursor-dot,
-.cursor-ring{
+.orb-1 {
+    width: 420px;
+    height: 420px;
+    left: -160px;
+    top: 12%;
+    background: #4f46e5;
+    animation: orbFloat1 12s ease-in-out infinite;
+}
+
+.orb-2 {
+    width: 360px;
+    height: 360px;
+    right: -120px;
+    top: 54%;
+    background: #9333ea;
+    animation: orbFloat2 15s ease-in-out infinite;
+}
+
+.orb-3 {
+    width: 300px;
+    height: 300px;
+    left: 40%;
+    bottom: -160px;
+    background: #2563eb;
+    animation: orbFloat3 13s ease-in-out infinite;
+}
+
+@keyframes gridDrift {
+    from { transform: perspective(700px) rotateX(62deg) translateY(12%) translateX(0); }
+    to   { transform: perspective(700px) rotateX(62deg) translateY(12%) translateX(60px); }
+}
+
+@keyframes orbFloat1 {
+    0%, 100% { transform: translate3d(0,0,0) scale(1); }
+    50% { transform: translate3d(80px, 40px, 0) scale(1.08); }
+}
+
+@keyframes orbFloat2 {
+    0%, 100% { transform: translate3d(0,0,0) scale(1); }
+    50% { transform: translate3d(-70px, -55px, 0) scale(1.08); }
+}
+
+@keyframes orbFloat3 {
+    0%, 100% { transform: translate3d(0,0,0) scale(1); }
+    50% { transform: translate3d(40px, -60px, 0) scale(1.12); }
+}
+
+/* =========================================================
+   粒子画布
+========================================================= */
+#particles,
+#introParticles {
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
-    z-index: 99999;
-    will-change: transform, opacity;
-    opacity: 0;
-    transition: opacity .3s ease, width .3s cubic-bezier(.22,1,.36,1),
-                height .3s cubic-bezier(.22,1,.36,1), border-color .3s ease,
-                background .3s ease;
 }
 
-.cursor-dot{
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #ffffff;
-    box-shadow: 0 0 12px rgba(255,255,255,.9), 0 0 24px rgba(167,139,250,.5);
-    margin: -2.5px 0 0 -2.5px;
+#particles {
+    z-index: -1;
 }
 
-.cursor-ring{
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid rgba(167,139,250,.75);
-    margin: -16px 0 0 -16px;
-    background: rgba(129,140,248,.02);
+#introParticles {
+    z-index: 2;
 }
 
-.cursor-dot.visible,
-.cursor-ring.visible{
-    opacity: 1;
-}
-
-.cursor-ring.active{
-    width: 58px;
-    height: 58px;
-    margin: -29px 0 0 -29px;
-    border-color: rgba(217,70,239,.9);
-    background: rgba(167,139,250,.10);
-    box-shadow: 0 0 24px rgba(167,139,250,.25), inset 0 0 18px rgba(167,139,250,.10);
-}
-
-.cursor-dot.active{
-    width: 3px;
-    height: 3px;
-    margin: -1.5px 0 0 -1.5px;
-    background: #d946ef;
-    box-shadow: 0 0 14px rgba(217,70,239,1);
-}
-
-@media (pointer: coarse) {
-    .cursor-dot, .cursor-ring { display: none; }
-}
-
-/* ================= 滚动进度条 ================= */
-.scroll-progress{
+/* =========================================================
+   顶部导航
+========================================================= */
+.navbar {
     position: fixed;
     top: 0;
     left: 0;
+    width: 100%;
+    height: 76px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    transition:
+        background 0.45s ease,
+        box-shadow 0.45s ease,
+        backdrop-filter 0.45s ease,
+        transform 0.45s ease;
+}
+
+.navbar.scrolled {
+    background: rgba(5, 8, 22, 0.70);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.28);
+}
+
+.nav-container {
+    width: min(1150px, 92%);
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    font-size: 23px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa, #d946ef);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    transition: transform 0.3s ease;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.nav-links a {
+    position: relative;
+    color: #cbd5e1;
+    font-size: 15px;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.nav-links a:not(.nav-button)::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    width: 0;
     height: 2px;
-    width: 0%;
-    z-index: 200;
-    background: linear-gradient(90deg, #60a5fa, #8b5cf6, #d946ef);
-    box-shadow: 0 0 14px rgba(139,92,246,.75), 0 0 4px rgba(217,70,239,.5);
-    transition: width .1s linear;
-    pointer-events: none;
-    border-radius: 0 2px 2px 0;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa);
+    transform: translateX(-50%);
+    transition: width 0.3s ease;
 }
 
-#particles{
-    position:fixed;
-    inset:0;
-    width:100%;
-    height:100%;
-    z-index:0;
-    pointer-events:none;
+.nav-links a:hover {
+    color: #fff;
+    transform: translateY(-2px);
 }
 
-.page{
-    position:relative;
-    z-index:1;
+.nav-links a:not(.nav-button):hover::after {
+    width: 72%;
 }
 
-/* ============ 视觉层 ============ */
-.vignette{
-    position:fixed;
-    inset:0;
-    z-index:5;
-    pointer-events:none;
-    background:radial-gradient(
-        ellipse 85% 78% at 50% 50%,
-        transparent 32%,
-        rgba(2,4,14,.28) 72%,
-        rgba(1,2,8,.58) 100%
+.nav-button {
+    padding: 10px 18px;
+    color: #fff !important;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    box-shadow: 0 8px 25px rgba(99,102,241,0.25);
+}
+
+/* =========================================================
+   首屏
+========================================================= */
+.hero {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 120px 20px 80px;
+}
+
+.hero-container {
+    width: min(1150px, 92%);
+    margin: auto;
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 70px;
+    align-items: center;
+}
+
+.hero-content {
+    animation: heroIn 1s cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes heroIn {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    margin-bottom: 25px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: #c4b5fd;
+    font-size: 13px;
+}
+
+.badge::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 12px #22c55e;
+}
+
+.hero h1 {
+    font-size: clamp(45px, 7vw, 82px);
+    line-height: 1.03;
+    letter-spacing: -3px;
+    margin-bottom: 25px;
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #60a5fa, #8b5cf6, #d946ef);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.hero p {
+    max-width: 650px;
+    color: #94a3b8;
+    font-size: 18px;
+    line-height: 1.8;
+    margin-bottom: 35px;
+}
+
+.buttons {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+/* =========================================================
+   按钮与波纹
+========================================================= */
+.btn {
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 24px;
+    border-radius: 13px;
+    font-weight: 600;
+    transition:
+        transform 0.35s cubic-bezier(.22,1,.36,1),
+        box-shadow 0.35s ease;
+}
+
+.btn::before {
+    content: "";
+    position: absolute;
+    top: -20%;
+    left: -140%;
+    width: 80%;
+    height: 140%;
+    transform: skewX(-22deg);
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,0.28),
+        transparent
     );
+    transition: left 0.65s ease;
 }
 
-.noise{
-    position:fixed;
-    inset:0;
-    z-index:6;
-    pointer-events:none;
-    opacity:.045;
-    mix-blend-mode:overlay;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-    background-size:240px 240px;
-    animation:noiseBreath 1.6s steps(3) infinite;
+.btn:hover::before {
+    left: 160%;
 }
 
-@keyframes noiseBreath{
-    0%{ opacity:.035; }
-    50%{ opacity:.060; }
-    100%{ opacity:.040; }
+.btn:hover {
+    transform: translateY(-4px);
 }
 
-.spotlight{
-    position:fixed;
-    inset:0;
-    z-index:4;
-    pointer-events:none;
-    opacity:0;
-    transition:opacity .55s ease;
-    mix-blend-mode:screen;
-    background:radial-gradient(
-        circle 340px at var(--mx,50vw) var(--my,50vh),
-        rgba(129,140,248,.10),
-        rgba(139,92,246,.045) 40%,
-        rgba(96,165,250,.015) 62%,
-        transparent 78%
-    );
+.btn-primary {
+    color: #fff;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    box-shadow: 0 15px 35px rgba(99,102,241,0.30);
 }
 
-.spotlight.on{
-    opacity:1;
+.btn-primary:hover {
+    box-shadow: 0 20px 45px rgba(99,102,241,0.45);
 }
 
-.background-glow{
-    position:fixed;
-    inset:0;
-    z-index:-1;
-    pointer-events:none;
-    overflow:hidden;
-    isolation:isolate;
-
-    background:
-        radial-gradient(78% 64% at 14% 18%,rgba(59,130,246,.095),transparent 72%),
-        radial-gradient(72% 60% at 84% 24%,rgba(124,58,237,.105),transparent 74%),
-        radial-gradient(70% 58% at 52% 88%,rgba(79,70,229,.065),transparent 76%),
-        linear-gradient(135deg,#050816 0%,#080e1f 32%,#0b1326 55%,#0d1528 72%,#070b18 100%);
-
-    animation:backgroundDepth 22s ease-in-out infinite alternate;
+.btn-secondary {
+    color: #fff;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
 }
 
-.background-glow::before{
-    content:"";
-    position:absolute;
-    inset:-18%;
-    pointer-events:none;
-
-    background:
-        radial-gradient(30% 23% at 22% 28%,rgba(56,189,248,.075),transparent 76%),
-        radial-gradient(32% 25% at 77% 31%,rgba(129,140,248,.09),transparent 78%),
-        radial-gradient(36% 28% at 51% 73%,rgba(167,139,250,.065),transparent 80%),
-        radial-gradient(24% 21% at 75% 79%,rgba(217,70,239,.032),transparent 80%);
-
-    filter:blur(64px) saturate(105%);
-    opacity:.82;
-
-    transform:translate3d(-1.5%,.8%,0) scale(1.035);
-
-    will-change:transform,opacity;
-
-    animation:fogDrift 30s ease-in-out infinite alternate;
+/* =========================================================
+   3D 玻璃卡片
+========================================================= */
+.hero-card-area {
+    perspective: 1100px;
+    display: flex;
+    justify-content: center;
+    animation: cardFloat 7s ease-in-out infinite;
+    transition: transform 0.15s ease-out;
+    will-change: transform;
 }
 
-.background-glow::after{
-    content:"";
-    position:absolute;
-    inset:-10%;
-    pointer-events:none;
+@keyframes cardFloat {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
 
+.glass-card {
+    width: 100%;
+    max-width: 430px;
+    padding: 42px;
+    border-radius: 28px;
     background:
         linear-gradient(
-            106deg,
-            transparent 8%,
-            rgba(96,165,250,.018) 20%,
-            rgba(129,140,248,.035) 34%,
-            rgba(167,139,250,.048) 48%,
-            rgba(129,140,248,.034) 62%,
-            rgba(96,165,250,.012) 75%,
-            transparent 88%
-        ),
-        radial-gradient(56% 28% at 47% 47%,rgba(129,140,248,.032),transparent 80%),
-        conic-gradient(
-            from 225deg at 50% 50%,
-            rgba(56,189,248,0) 0deg,
-            rgba(56,189,248,.015) 54deg,
-            rgba(129,140,248,.025) 96deg,
-            rgba(167,139,250,.038) 132deg,
-            rgba(217,70,239,.012) 170deg,
-            rgba(96,165,250,0) 220deg,
-            rgba(129,140,248,.020) 286deg,
-            rgba(56,189,248,0) 360deg
+            135deg,
+            rgba(255,255,255,0.12),
+            rgba(255,255,255,0.04)
         );
-
-    filter:blur(34px) saturate(104%);
-    opacity:.58;
-    mix-blend-mode:screen;
-
-    transform:translate3d(0,0,0) rotate(-7deg) scale(1.02);
-
-    will-change:transform,opacity;
-
-    animation:
-        ribbonBlend 42s ease-in-out infinite alternate,
-        haloBreath 16s ease-in-out infinite alternate;
-}
-
-@keyframes backgroundDepth{
-    0%{ opacity:.94; }
-    50%{ opacity:.985; }
-    100%{ opacity:.96; }
-}
-
-@keyframes fogDrift{
-    0%{ transform:translate3d(-2%,1%,0) scale(1.02) rotate(0deg); opacity:.72; }
-    50%{ transform:translate3d(1.2%,-1.4%,0) scale(1.05) rotate(.6deg); opacity:.88; }
-    100%{ transform:translate3d(2.5%,1.5%,0) scale(1.035) rotate(-.8deg); opacity:.78; }
-}
-
-@keyframes ribbonBlend{
-    0%{ transform:translate3d(-1.5%,.8%,0) rotate(-7deg) scale(1.015); }
-    50%{ transform:translate3d(1.3%,-.9%,0) rotate(-1.5deg) scale(1.035); }
-    100%{ transform:translate3d(-.5%,1.2%,0) rotate(7deg) scale(1.02); }
-}
-
-@keyframes haloBreath{
-    0%{ opacity:.40; }
-    50%{ opacity:.58; }
-    100%{ opacity:.44; }
-}
-
-.glow{
-    position:absolute;
-    border-radius:50%;
-    filter:blur(108px);
-    opacity:.14;
-    animation:glowBreathe 24s ease-in-out infinite alternate;
-}
-
-.glow::before{
-    content:"";
-    position:absolute;
-    width:760px;
-    height:110px;
-    left:-170px;
-    top:95px;
-
-    border-radius:999px;
-
-    background:linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(96,165,250,0) 8%,
-        rgba(96,165,250,.06) 22%,
-        rgba(129,140,248,.13) 45%,
-        rgba(192,132,252,.10) 62%,
-        rgba(217,70,239,.035) 82%,
-        transparent 100%
-    );
-
-    filter:blur(30px);
-    opacity:.55;
-
-    transform:rotate(-12deg) translate3d(0,0,0);
-    transform-origin:center;
-    pointer-events:none;
-    will-change:transform,opacity;
-
-    animation:ribbonFlowA 22s ease-in-out infinite alternate;
-}
-
-.glow::after{
-    content:"";
-    position:absolute;
-    width:680px;
-    height:85px;
-    left:-40px;
-    top:210px;
-
-    border-radius:999px;
-
-    background:linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(99,102,241,.025) 12%,
-        rgba(139,92,246,.075) 34%,
-        rgba(167,139,250,.12) 52%,
-        rgba(96,165,250,.055) 72%,
-        transparent 100%
-    );
-
-    filter:blur(28px);
-    opacity:.42;
-
-    transform:rotate(16deg) translate3d(0,0,0);
-
-    pointer-events:none;
-    will-change:transform,opacity;
-
-    animation:ribbonFlowB 26s ease-in-out infinite alternate;
-}
-
-.glow.two::before{
-    width:620px;
-    height:92px;
-    left:-230px;
-    top:30px;
-    transform:rotate(17deg) translate3d(0,0,0);
-    animation:ribbonFlowB 24s ease-in-out infinite alternate-reverse;
-}
-
-.glow.two::after{
-    width:540px;
-    height:72px;
-    left:-160px;
-    top:170px;
-    transform:rotate(-19deg) translate3d(0,0,0);
-    opacity:.48;
-    animation:ribbonFlowA 28s ease-in-out infinite alternate-reverse;
-}
-
-@keyframes ribbonFlowA{
-    0%{ transform:rotate(-12deg) translate3d(-55px,10px,0) scaleX(.94); opacity:.38; }
-    50%{ transform:rotate(-7deg) translate3d(45px,-8px,0) scaleX(1.03); opacity:.70; }
-    100%{ transform:rotate(-15deg) translate3d(105px,15px,0) scaleX(.98); opacity:.48; }
-}
-
-@keyframes ribbonFlowB{
-    0%{ transform:rotate(16deg) translate3d(75px,-10px,0) scaleX(1); opacity:.32; }
-    50%{ transform:rotate(10deg) translate3d(-35px,12px,0) scaleX(.96); opacity:.62; }
-    100%{ transform:rotate(19deg) translate3d(-105px,-6px,0) scaleX(1.04); opacity:.42; }
-}
-
-.glow.one{
-    width:360px;
-    height:360px;
-    left:-120px;
-    top:10%;
-    background:#4f46e5;
-}
-
-.glow.two{
-    width:320px;
-    height:320px;
-    right:-100px;
-    bottom:5%;
-    background:#9333ea;
-}
-
-/* 导航 */
-.navbar{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:76px;
-    z-index:10;
-    display:flex;
-    align-items:center;
-    transition:background .35s ease,box-shadow .35s ease,backdrop-filter .35s ease;
-}
-
-.navbar.scrolled{
-    background:rgba(5,8,22,.72);
-    backdrop-filter:blur(16px);
-    -webkit-backdrop-filter:blur(16px);
-    border-bottom:1px solid rgba(255,255,255,.08);
-    box-shadow:0 10px 35px rgba(0,0,0,.22);
-}
-
-.nav-container{
-    width:min(1150px,92%);
-    margin:auto;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-}
-
-.logo{
-    font-size:23px;
-    font-weight:900;
-    background:linear-gradient(135deg,#60a5fa,#a78bfa,#d946ef);
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-}
-
-.nav-links{
-    display:flex;
-    align-items:center;
-    gap:28px;
-}
-
-.nav-links a{
-    color:#cbd5e1;
-    font-size:15px;
-    transition:color .25s ease,transform .25s ease;
-}
-
-.nav-links a:hover{
-    color:#fff;
-    transform:translateY(-2px);
-}
-
-.nav-button{
-    padding:10px 18px;
-    border-radius:11px;
-    color:#fff!important;
-    background:linear-gradient(135deg,var(--primary),var(--secondary));
-    box-shadow:0 8px 25px rgba(99,102,241,.22);
-}
-
-/* 首屏 */
-.hero{
-    min-height:100vh;
-    padding:120px 20px 80px;
-    display:flex;
-    align-items:center;
-}
-
-.hero-container{
-    width:min(1150px,92%);
-    margin:auto;
-    display:grid;
-    grid-template-columns:1.1fr .9fr;
-    gap:70px;
-    align-items:center;
-}
-
-.hero-content{
-    animation:heroIn .9s var(--ease) both;
-}
-
-@keyframes heroIn{
-    from{opacity:0;transform:translateY(30px)}
-    to{opacity:1;transform:translateY(0)}
-}
-
-.badge{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:8px 14px;
-    margin-bottom:24px;
-    border-radius:999px;
-    background:rgba(255,255,255,.055);
-    border:1px solid rgba(255,255,255,.10);
-    color:#c4b5fd;
-    font-size:13px;
-}
-
-.badge::before{
-    content:"";
-    width:7px;
-    height:7px;
-    border-radius:50%;
-    background:#22c55e;
-    box-shadow:0 0 12px #22c55e;
-}
-
-.hero h1{
-    font-size:clamp(45px,7vw,82px);
-    line-height:1.04;
-    letter-spacing:-3px;
-    margin-bottom:24px;
-}
-
-.gradient-text{
-    background:linear-gradient(135deg,#60a5fa,#8b5cf6,#d946ef);
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-}
-
-.hero p{
-    color:#94a3b8;
-    font-size:18px;
-    margin-bottom:34px;
-}
-
-.buttons{
-    display:flex;
-    flex-wrap:wrap;
-    gap:14px;
-}
-
-.btn{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:14px 24px;
-    border-radius:13px;
-    font-weight:700;
-    transition:transform .35s var(--ease),box-shadow .3s ease;
-    will-change:transform;
-}
-
-.btn-primary{
-    color:#fff;
-    background:linear-gradient(135deg,#6366f1,#8b5cf6);
-    box-shadow:0 15px 35px rgba(99,102,241,.28);
-}
-
-.btn-secondary{
-    color:#fff;
-    background:rgba(255,255,255,.055);
-    border:1px solid rgba(255,255,255,.12);
-}
-
-/* ============ 卡片区 ============ */
-.hero-card-area{
-    position: relative;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    /* 父级负责透视：JS 中只需 rotate，立体感由这里决定 */
-    perspective: 900px;
-    perspective-origin: 50% 50%;
-}
-
-/* ============ 卡片轨道环 ============ */
-.orbit{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-    will-change: transform;
-}
-
-.orbit-1{
-    width: 560px;
-    height: 560px;
-    margin: -280px 0 0 -280px;
-    border: 1px dashed rgba(129,140,248,.11);
-    animation: orbitSpin 38s linear infinite;
-}
-
-.orbit-2{
-    width: 700px;
-    height: 700px;
-    margin: -350px 0 0 -350px;
-    border: 1px solid rgba(167,139,250,.07);
-    animation: orbitSpin 62s linear infinite reverse;
-}
-
-.orbit-2::before{
-    content: "";
-    position: absolute;
-    top: -3px;
-    left: 50%;
-    width: 6px;
-    height: 6px;
-    margin-left: -3px;
-    border-radius: 50%;
-    background: #a78bfa;
-    box-shadow: 0 0 18px rgba(167,139,250,1), 0 0 36px rgba(167,139,250,.5);
-}
-
-.orbit-2::after{
-    content: "";
-    position: absolute;
-    bottom: -2px;
-    left: 32%;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #60a5fa;
-    box-shadow: 0 0 14px rgba(96,165,250,.9);
-}
-
-.orbit-1::before{
-    content: "";
-    position: absolute;
-    right: -2px;
-    top: 40%;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #d946ef;
-    box-shadow: 0 0 12px rgba(217,70,239,.9);
-}
-
-@keyframes orbitSpin{
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-@media (max-width: 850px){
-    .orbit { display: none; }
-}
-
-/* =========================================
-   液态玻璃卡片
-   - 基础层偏实（不透明感强，文字清晰）
-   - 内部叠加流动光斑模拟液态
-   - 边缘有高光 + 彩色折射
-========================================= */
-.glass-card{
-    position:relative;
-    z-index: 2;
-    isolation:isolate;
-
-    /* 更实的基础色：像浓稠的暗色玻璃，不透明感足 */
-    background:
-        linear-gradient(135deg,
-            rgba(23, 30, 58, 0.78) 0%,
-            rgba(15, 20, 42, 0.72) 42%,
-            rgba(35, 28, 78, 0.75) 76%,
-            rgba(20, 18, 45, 0.78) 100%
-        );
-
-    border: 1px solid rgba(200, 215, 255, 0.20);
-    border-radius: 30px;
-    padding: 40px;
-
+    border: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(25px);
     box-shadow:
-        /* 外部大阴影，让卡片"浮起来" */
-        0 30px 80px rgba(2, 6, 23, 0.55),
-        0 12px 40px rgba(30, 64, 175, 0.18),
-        /* 顶部边缘亮线 —— 模拟玻璃受光 */
-        inset 0 1.5px 0 rgba(255, 255, 255, 0.32),
-        /* 底部边缘暗线 —— 模拟玻璃厚度 */
-        inset 0 -1.5px 1px rgba(0, 0, 0, 0.28),
-        /* 左上内侧辉光 —— 液态反光 */
-        inset 40px 40px 80px -50px rgba(150, 180, 255, 0.22),
-        /* 右下内侧暖光 */
-        inset -40px -40px 80px -50px rgba(200, 130, 255, 0.18),
-        /* 内层整体光晕 */
-        inset 0 0 60px rgba(129, 140, 248, 0.06);
-
-    backdrop-filter: blur(32px) saturate(180%) brightness(1.06);
-    -webkit-backdrop-filter: blur(32px) saturate(180%) brightness(1.06);
-
-    overflow: hidden;
-
-    /* 3D 相关的关键是这些 */
-    transform-style: preserve-3d;
-    transform: rotateX(0deg) rotateY(0deg) translateZ(0);
+        0 30px 80px rgba(0,0,0,0.30),
+        inset 0 1px 0 rgba(255,255,255,0.08);
     transition:
-        transform .55s cubic-bezier(.22,1,.36,1),
-        border-color .4s ease,
-        box-shadow .4s ease;
-
+        transform 0.16s ease-out,
+        box-shadow 0.5s ease;
+    transform-style: preserve-3d;
     will-change: transform;
 }
 
-.glass-card:hover{
-    border-color:rgba(220, 230, 255, 0.32);
+.glass-card:hover {
     box-shadow:
-        0 45px 110px rgba(2, 6, 23, 0.62),
-        0 20px 60px rgba(99, 102, 241, 0.28),
-        inset 0 1.5px 0 rgba(255, 255, 255, 0.42),
-        inset 0 -1.5px 1px rgba(0, 0, 0, 0.30),
-        inset 40px 40px 90px -50px rgba(150, 180, 255, 0.28),
-        inset -40px -40px 90px -50px rgba(200, 130, 255, 0.24),
-        inset 0 0 80px rgba(129, 140, 248, 0.10);
+        0 40px 100px rgba(0,0,0,0.40),
+        inset 0 1px 0 rgba(255,255,255,0.10);
 }
 
-/* 液态流动光斑层 */
-.glass-card::before{
-    content:"";
-    position:absolute;
-    inset:-15%;
-    pointer-events:none;
-    border-radius:inherit;
+.card-label {
+    color: #a78bfa;
+    font-size: 12px;
+    letter-spacing: 2px;
+    font-weight: 800;
+}
 
-    background:
-        radial-gradient(ellipse 55% 38% at 22% 22%,
-            rgba(96, 165, 250, 0.30),
-            transparent 62%),
-        radial-gradient(ellipse 50% 34% at 82% 30%,
-            rgba(167, 139, 250, 0.28),
-            transparent 65%),
-        radial-gradient(ellipse 60% 42% at 50% 88%,
-            rgba(217, 70, 239, 0.16),
-            transparent 68%),
-        radial-gradient(ellipse 28% 20% at 72% 72%,
-            rgba(255, 255, 255, 0.12),
-            transparent 62%);
+.glass-card h2 {
+    font-size: 32px;
+    line-height: 1.25;
+    margin: 12px 0 16px;
+}
 
-    filter: blur(6px) saturate(115%);
-    mix-blend-mode: screen;
-    opacity: 0.72;
+.glass-card p {
+    color: #94a3b8;
+}
 
-    transform: translate3d(0, 0, 0) scale(1);
-    animation: liquidFlow 16s ease-in-out infinite alternate;
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.stat {
+    padding: 15px;
+    text-align: center;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.07);
+    transition:
+        transform 0.3s ease,
+        background 0.3s ease;
+}
+
+.stat:hover {
+    transform: translateY(-4px);
+    background: rgba(255,255,255,0.09);
+}
+
+.stat strong {
+    display: block;
+    color: #a5b4fc;
+    font-size: 20px;
+}
+
+.stat span {
+    color: #64748b;
+    font-size: 12px;
+}
+
+/* =========================================================
+   扫描光线
+========================================================= */
+.scan-line {
+    position: absolute;
+    left: -20%;
+    top: 0;
+    width: 10%;
+    height: 100%;
+    pointer-events: none;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(129,140,248,0.00),
+        rgba(167,139,250,0.10),
+        rgba(255,255,255,0.18),
+        rgba(167,139,250,0.10),
+        transparent
+    );
+    filter: blur(1px);
+    animation: scan 9s ease-in-out infinite;
+}
+
+@keyframes scan {
+    0%, 58% { left: -25%; opacity: 0; }
+    64% { opacity: 1; }
+    76% { left: 110%; opacity: 1; }
+    82%,100% { left: 110%; opacity: 0; }
+}
+
+/* =========================================================
+   通用区域
+========================================================= */
+.section {
+    position: relative;
+    z-index: 1;
+    padding: 120px 20px;
+}
+
+.container {
+    width: min(1150px, 92%);
+    margin: auto;
+}
+
+.section-title {
+    max-width: 700px;
+    margin: 0 auto 60px;
+    text-align: center;
+}
+
+.section-label {
+    color: #8b5cf6;
+    font-size: 13px;
+    letter-spacing: 2px;
+    font-weight: 800;
+}
+
+.section-title h2 {
+    font-size: 45px;
+    margin-top: 12px;
+}
+
+.section-title p {
+    color: #64748b;
+    margin-top: 15px;
+}
+
+/* =========================================================
+   卡片
+========================================================= */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 24px;
+}
+
+.card {
+    padding: 34px;
+    border-radius: 23px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    transition:
+        transform 0.5s cubic-bezier(.22,1,.36,1),
+        box-shadow 0.5s ease,
+        border-color 0.5s ease;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    border-color: rgba(139,92,246,0.30);
+    box-shadow: 0 30px 65px rgba(0,0,0,0.22);
+}
+
+.icon {
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    font-weight: 800;
+}
+
+.card h3 {
+    margin-bottom: 10px;
+    font-size: 21px;
+}
+
+.card p {
+    color: #64748b;
+}
+
+/* =========================================================
+   关于
+========================================================= */
+.about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 70px;
+    align-items: center;
+}
+
+.about h2 {
+    font-size: 45px;
+    margin: 10px 0 20px;
+}
+
+.about p {
+    color: #64748b;
+    margin-bottom: 15px;
+}
+
+.about-panel {
+    min-height: 400px;
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #312e81, #581c87, #7e22ce);
+    box-shadow: 0 30px 90px rgba(99,102,241,0.20);
+}
+
+.about-panel::before,
+.about-panel::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    filter: blur(1px);
+}
+
+.about-panel::before {
+    width: 240px;
+    height: 240px;
+    right: -80px;
+    top: -80px;
+}
+
+.about-panel::after {
+    width: 190px;
+    height: 190px;
+    left: -70px;
+    bottom: -80px;
+}
+
+.about-panel h3 {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.about-panel p {
+    color: rgba(255,255,255,0.75);
+    max-width: 350px;
+}
+
+/* =========================================================
+   联系
+========================================================= */
+.contact {
+    text-align: center;
+}
+
+.contact-box {
+    padding: 80px 30px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #111827, #1e1b4b);
+    box-shadow: 0 30px 90px rgba(0,0,0,0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.contact-box::before {
+    content: "";
+    position: absolute;
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    right: -140px;
+    top: -200px;
+    background: rgba(139,92,246,0.18);
+    filter: blur(30px);
+}
+
+.contact-box h2,
+.contact-box p,
+.contact-box a {
+    position: relative;
     z-index: 1;
 }
 
-@keyframes liquidFlow{
-    0%   { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); }
-    33%  { transform: translate3d(-3%, 2%, 0) scale(1.05) rotate(1.5deg); }
-    66%  { transform: translate3d(2%, -2.5%, 0) scale(1.03) rotate(-1deg); }
-    100% { transform: translate3d(3%, 1%, 0) scale(1.06) rotate(2deg); }
+.contact-box h2 {
+    font-size: 45px;
+    margin-bottom: 15px;
 }
 
-/* 玻璃边缘高光 + 折射 */
-.glass-card::after{
-    content:"";
-    position:absolute;
-    inset:0;
-    pointer-events:none;
-    border-radius:inherit;
-
-    background:
-        /* 左上角强高光 */
-        linear-gradient(135deg,
-            rgba(255, 255, 255, 0.42) 0%,
-            rgba(255, 255, 255, 0.10) 14%,
-            transparent 30%
-        ),
-        /* 右下角蓝紫边缘折射 */
-        linear-gradient(315deg,
-            rgba(129, 140, 248, 0.22) 0%,
-            rgba(96, 165, 250, 0.06) 14%,
-            transparent 32%
-        );
-
-    mix-blend-mode: screen;
-    opacity: 0.9;
-    z-index: 3;
+.contact-box p {
+    max-width: 650px;
+    margin: 0 auto 30px;
+    color: #94a3b8;
 }
 
-/* 全息彩虹边框 */
-.holo-layer{
-    position:absolute;
-    inset:0;
-    border-radius:inherit;
-    padding:1.4px;
-    background:conic-gradient(
-        from var(--holo-angle,0deg),
-        rgba(96,165,250,0) 0%,
-        rgba(96,165,250,.70) 10%,
-        rgba(167,139,250,.85) 26%,
-        rgba(217,70,239,.66) 42%,
-        rgba(56,189,248,.72) 58%,
-        rgba(129,140,248,.70) 74%,
-        rgba(96,165,250,.32) 88%,
-        rgba(96,165,250,0) 100%
-    );
-    -webkit-mask:
-        linear-gradient(#fff 0 0) content-box,
-        linear-gradient(#fff 0 0);
-    -webkit-mask-composite:xor;
-    mask:
-        linear-gradient(#fff 0 0) content-box,
-        linear-gradient(#fff 0 0);
-    mask-composite:exclude;
-    pointer-events:none;
-    opacity:.62;
-    transition:opacity .4s ease;
-    z-index:4;
-    animation:holoPulse 5.5s ease-in-out infinite;
+/* =========================================================
+   页脚
+========================================================= */
+footer {
+    position: relative;
+    z-index: 1;
+    padding: 30px 20px;
+    text-align: center;
+    background: #020617;
+    color: #64748b;
+    font-size: 14px;
 }
 
-@keyframes holoPulse{
-    0%,100%{ opacity:.52; }
-    50%{ opacity:.82; }
-}
-
-.glass-card:hover .holo-layer{
-    opacity:1;
-    animation-play-state:paused;
-}
-
-/* 鼠标跟随高光 */
-.highlight-layer{
-    position:absolute;
-    inset:0;
-    border-radius:inherit;
-    background:radial-gradient(
-        circle 400px at var(--card-mx,50%) var(--card-my,50%),
-        rgba(255,255,255,.20),
-        rgba(200,215,255,.11) 22%,
-        rgba(129,140,248,.05) 42%,
-        transparent 66%
-    );
-    pointer-events:none;
-    opacity:0;
-    transition:opacity .4s ease;
-    mix-blend-mode:screen;
-    z-index:5;
-}
-
-.glass-card:hover .highlight-layer{
-    opacity:1;
-}
-
-.card-label{
-    position:relative;
-    z-index:6;
-    color:#c4b5fd;
-    font-size:12px;
-    letter-spacing:2px;
-    font-weight:900;
-    text-shadow: 0 0 12px rgba(167,139,250,.35);
-}
-
-.glass-card h2{
-    position:relative;
-    z-index:6;
-    margin:12px 0 14px;
-    font-size:32px;
-    text-shadow:
-        0 1px 0 rgba(255,255,255,.10),
-        0 0 24px rgba(129,140,248,.18);
-}
-
-.glass-card p{
-    position:relative;
-    z-index:6;
-    color:#c0cbe0;
-}
-
-.stats{
-    position:relative;
-    z-index:6;
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:10px;
-    margin-top:28px;
-}
-
-.stat{
-    padding:15px;
-    text-align:center;
-    border-radius:15px;
-    background:rgba(255,255,255,.06);
-    border:1px solid rgba(255,255,255,.09);
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.10),
-        0 2px 8px rgba(0,0,0,.18);
-}
-
-.stat strong{
-    display:block;
-    color:#b6c2ff;
-    font-size:20px;
-}
-
-.stat span{
-    color:#7a89a8;
-    font-size:12px;
-}
-
-/* 区域 */
-.section{
-    padding:110px 20px;
-}
-
-.container{
-    width:min(1150px,92%);
-    margin:auto;
-}
-
-.section-title{
-    max-width:700px;
-    margin:0 auto 55px;
-    text-align:center;
-}
-
-.section-label{
-    color:#8b5cf6;
-    font-size:13px;
-    letter-spacing:2px;
-    font-weight:900;
-}
-
-.section-title h2{
-    margin-top:12px;
-    font-size:44px;
-}
-
-.section-title p{
-    margin-top:14px;
-    color:#64748b;
-}
-
-/* 逐字浮现 */
-.section-title h2 .char,
-#about h2 .char,
-.contact-box h2 .char{
-    display: inline-block;
+/* =========================================================
+   滚动出现
+========================================================= */
+.reveal {
     opacity: 0;
-    transform: translateY(26px) scale(.9);
-    filter: blur(8px);
+    transform: translateY(40px);
     transition:
-        opacity .75s cubic-bezier(.22,1,.36,1),
-        transform .75s cubic-bezier(.22,1,.36,1),
-        filter .75s cubic-bezier(.22,1,.36,1);
-    will-change: transform, opacity, filter;
+        opacity 0.9s ease,
+        transform 0.9s cubic-bezier(.22,1,.36,1);
 }
 
-.reveal.show .char{
+.reveal.show {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
+    transform: translateY(0);
 }
 
-.cards{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:22px;
-}
+/* =========================================================
+   手机
+========================================================= */
+@media (max-width: 850px) {
+    .nav-links {
+        gap: 15px;
+    }
 
-.card{
-    padding:32px;
-    border-radius:22px;
-    background:rgba(255,255,255,.04);
-    border:1px solid rgba(255,255,255,.07);
-    transition:transform .45s var(--ease),box-shadow .45s ease,border-color .45s ease;
-}
-
-.card:hover{
-    transform:translateY(-8px);
-    border-color:rgba(139,92,246,.28);
-    box-shadow:0 24px 55px rgba(0,0,0,.20);
-}
-
-.icon{
-    width:54px;
-    height:54px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    margin-bottom:18px;
-    border-radius:16px;
-    background:linear-gradient(135deg,#6366f1,#8b5cf6);
-    font-weight:900;
-}
-
-.card h3{
-    margin-bottom:9px;
-    font-size:21px;
-}
-
-.card p{
-    color:#64748b;
-}
-
-.about-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:65px;
-    align-items:center;
-}
-
-.about h2,
-#about h2{
-    margin:10px 0 20px;
-    font-size:44px;
-}
-
-.about p,
-#about p{
-    margin-bottom:15px;
-    color:#64748b;
-}
-
-.about-panel{
-    min-height:380px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    border-radius:28px;
-    background:linear-gradient(135deg,#312e81,#581c87,#7e22ce);
-    box-shadow:0 30px 80px rgba(99,102,241,.18);
-}
-
-.about-panel h3{
-    font-size:48px;
-    margin-bottom:10px;
-}
-
-.about-panel p{
-    max-width:350px;
-    color:rgba(255,255,255,.74);
-}
-
-.contact{
-    text-align:center;
-}
-
-.contact-box{
-    padding:75px 30px;
-    border-radius:28px;
-    background:linear-gradient(135deg,#111827,#1e1b4b);
-    box-shadow:0 30px 80px rgba(0,0,0,.24);
-}
-
-.contact-box h2{
-    font-size:44px;
-    margin-bottom:14px;
-}
-
-.contact-box p{
-    max-width:650px;
-    margin:0 auto 30px;
-    color:#94a3b8;
-}
-
-footer{
-    padding:30px 20px;
-    text-align:center;
-    background:#020617;
-    color:#64748b;
-    font-size:14px;
-}
-
-.reveal{
-    opacity:0;
-    transform:translateY(28px);
-    transition:opacity .75s ease,transform .75s var(--ease);
-}
-
-.reveal.show{
-    opacity:1;
-    transform:translateY(0);
-}
-
-@media(max-width:850px){
-    .nav-links a:not(.nav-button){
-        display:none;
+    .nav-links a:not(.nav-button) {
+        display: none;
     }
 
     .hero-container,
-    .about-grid{
-        grid-template-columns:1fr;
+    .about-grid {
+        grid-template-columns: 1fr;
     }
 
-    .hero{
-        padding-top:125px;
+    .hero {
+        padding-top: 130px;
     }
 
-    .hero h1{
-        font-size:52px;
+    .hero h1 {
+        font-size: 52px;
     }
 
-    .cards{
-        grid-template-columns:1fr;
+    .cards {
+        grid-template-columns: 1fr;
     }
 }
 
-@media(max-width:600px){
-    .hero h1{
-        font-size:44px;
-        letter-spacing:-1.5px;
+@media (max-width: 600px) {
+    .hero h1 {
+        font-size: 45px;
+        letter-spacing: -1.5px;
     }
 
     .section-title h2,
     .about h2,
-    #about h2,
-    .contact-box h2{
-        font-size:34px;
+    .contact-box h2 {
+        font-size: 34px;
     }
 
-    .glass-card{
-        padding:30px;
-        border-radius:22px;
+    .glass-card {
+        padding: 30px;
     }
 }
 
-@media(prefers-reduced-motion:reduce){
-    html{scroll-behavior:auto}
-
-    .background-glow,
-    .background-glow::before,
-    .background-glow::after,
-    .glow,
-    .glow::before,
-    .glow::after,
-    .noise,
-    .holo-layer,
-    .orbit,
-    .glass-card::before{
-        animation:none!important;
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
     }
 
-    *,*::before,*::after{
-        animation:none!important;
-        transition:none!important;
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
-
-@media (max-width:700px){
-    .glass-card{
-        backdrop-filter:blur(20px) saturate(150%);
-        -webkit-backdrop-filter:blur(20px) saturate(150%);
-        box-shadow:
-            0 20px 55px rgba(2,6,23,.42),
-            0 8px 24px rgba(30,64,175,.14),
-            inset 0 1.5px 0 rgba(255,255,255,.24);
-    }
-
-    .glass-card::after{
-        filter:blur(0);
-        opacity:.7;
-    }
-
-    .vignette{
-        background:radial-gradient(
-            ellipse 90% 82% at 50% 50%,
-            transparent 38%,
-            rgba(2,4,14,.26) 76%,
-            rgba(1,2,8,.50) 100%
-        );
-    }
-}
-
 </style>
 </head>
 
 <body>
 
-<div class="cursor-dot" id="cursorDot"></div>
-<div class="cursor-ring" id="cursorRing"></div>
-
-<div class="scroll-progress" id="scrollProgress"></div>
-
-<canvas id="particles"></canvas>
-
-<div class="spotlight" id="spotlight"></div>
-
-<div class="background-glow">
-    <div class="glow one"></div>
-    <div class="glow two"></div>
+<div class="background">
+    <div class="bg-grid"></div>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+    <div class="scan-line"></div>
 </div>
 
-<div class="page">
+<canvas id="particles"></canvas>
+<canvas id="introParticles"></canvas>
 
 <header class="navbar" id="navbar">
     <div class="nav-container">
-        <a href="#home" class="logo">抓号器官网</a>
+
+        <a href="#home" class="logo">
+            抓号器官网
+        </a>
 
         <nav class="nav-links">
             <a href="#home">首页</a>
             <a href="#features">项目</a>
             <a href="#about">关于</a>
             <a href="#contact">联系</a>
-            <a href="#contact" class="nav-button">联系我们</a>
+
+            <a href="#contact" class="nav-button">
+                联系我
+            </a>
         </nav>
+
     </div>
 </header>
 
-<main>
-
 <section class="hero" id="home">
+
     <div class="hero-container">
 
         <div class="hero-content">
-            <div class="badge">欢迎来到抓号器官网</div>
+
+            <div class="badge">
+                欢迎来到抓号器官网
+            </div>
 
             <h1>
                 你将拥有
-                <span class="gradient-text">超多顶级账号</span>
+                <span class="gradient-text">
+                    超多顶级账号
+                </span>
             </h1>
 
-            <p>抓号器，拥有更多账号</p>
+            <p>
+                抓号器，拥有更多账号
+            </p>
 
             <div class="buttons">
-                <a href="#features" class="btn btn-primary">探索网站</a>
-                <a href="#about" class="btn btn-secondary">了解更多</a>
+                <a href="#features" class="btn btn-primary">
+                    探索网站
+                </a>
+
+                <a href="#about" class="btn btn-secondary">
+                    了解更多
+                </a>
             </div>
+
         </div>
 
         <div class="hero-card-area" id="heroCardArea">
-            <div class="orbit orbit-1" aria-hidden="true"></div>
-            <div class="orbit orbit-2" aria-hidden="true"></div>
 
             <div class="glass-card" id="heroCard">
 
-                <div class="holo-layer" aria-hidden="true"></div>
-                <div class="highlight-layer" aria-hidden="true"></div>
+                <div class="card-label">
+                    OFFICIAL WEBSITE
+                </div>
 
-                <div class="card-label">OFFICIAL WEBSITE</div>
+                <h2>
+                    高级 · 流畅 · 便捷
+                </h2>
 
-                <h2>高级 · 流畅 · 便捷</h2>
-
-                <p>抓号器，拥有更多账号</p>
+                <p>
+                    抓号器，拥有更多账号
+                </p>
 
                 <div class="stats">
+
                     <div class="stat">
                         <strong>01</strong>
                         <span>首页</span>
@@ -1265,1361 +890,1589 @@ footer{
                         <strong>03</strong>
                         <span>联系</span>
                     </div>
+
                 </div>
 
             </div>
+
         </div>
 
     </div>
+
 </section>
 
 <section class="section" id="features">
+
     <div class="container">
 
         <div class="section-title reveal">
             <div class="section-label">FEATURES</div>
+
             <h2>网站内容</h2>
-            <p>未来可以在这里加入你的项目、服务、作品和其他功能。</p>
+
+            <p>
+                未来可以在这里加入你的项目、
+                服务、作品和其他功能。
+            </p>
         </div>
 
         <div class="cards">
 
             <div class="card reveal">
                 <div class="icon">01</div>
+
                 <h3>我的项目</h3>
-                <p>展示你的程序、网站、项目以及各种作品。</p>
+
+                <p>
+                    展示你的程序、网站、
+                    项目以及各种作品。
+                </p>
             </div>
 
             <div class="card reveal">
                 <div class="icon">02</div>
+
                 <h3>我的服务</h3>
-                <p>展示你的产品、服务和功能。</p>
+
+                <p>
+                    展示你的产品、
+                    服务和功能。
+                </p>
             </div>
 
             <div class="card reveal">
                 <div class="icon">03</div>
+
                 <h3>最新动态</h3>
-                <p>发布网站更新、新闻以及项目进展。</p>
+
+                <p>
+                    发布网站更新、
+                    新闻以及项目进展。
+                </p>
             </div>
 
         </div>
+
     </div>
+
 </section>
 
 <section class="section" id="about">
+
     <div class="container">
 
         <div class="about-grid">
 
             <div class="reveal">
-                <div class="section-label">ABOUT</div>
-                <h2>关于抓号器</h2>
-                <p>这是抓号器的官方网站。</p>
-                <p>后面还可以继续加入更多页面、账号展示、功能介绍以及联系入口。</p>
+
+                <div class="section-label">
+                    ABOUT
+                </div>
+
+                <h2>
+                    关于抓号器
+                </h2>
+
+                <p>
+                    这是抓号器的官方网站。
+                </p>
+
+                <p>
+                    后面还可以继续加入更多页面、
+                    账号展示、功能介绍以及联系入口。
+                </p>
+
             </div>
 
             <div class="about-panel reveal">
+
                 <div>
+
                     <h3>START</h3>
-                    <p>抓号器，拥有更多账号。让页面更现代，让操作更方便。</p>
+
+                    <p>
+                        抓号器，拥有更多账号。
+                        让页面更现代，让操作更方便。
+                    </p>
+
                 </div>
+
             </div>
 
         </div>
 
     </div>
+
 </section>
 
 <section class="section contact" id="contact">
+
     <div class="container">
 
         <div class="contact-box reveal">
-            <h2>联系我们</h2>
-            <p>欢迎来到抓号器官网。后续可以在这里添加联系方式、提交建议和更多功能。</p>
-            <a href="mailto:example@example.com" class="btn btn-primary">联系我们</a>
+
+            <h2>
+                联系我们
+            </h2>
+
+            <p>
+                欢迎来到抓号器官网。
+                后续可以在这里添加联系方式、
+                提交建议和更多功能。
+            </p>
+
+            <a href="mailto:example@example.com"
+               class="btn btn-primary">
+                联系我们
+            </a>
+
         </div>
 
     </div>
-</section>
 
-</main>
+</section>
 
 <footer>
     © 2026 抓号器官网 · All Rights Reserved.
 </footer>
 
-</div>
-
-<div class="vignette" aria-hidden="true"></div>
-<div class="noise" aria-hidden="true"></div>
-
 <script>
 /* =========================================================
-   页面基础交互
+   导航滚动
 ========================================================= */
+
 const navbar = document.getElementById("navbar");
 
-window.addEventListener("scroll", () => {
-    navbar.classList.toggle("scrolled", window.scrollY > 40);
-}, { passive: true });
+window.addEventListener(
+    "scroll",
+    () => {
+        navbar.classList.toggle(
+            "scrolled",
+            window.scrollY > 40
+        );
+    },
+    { passive: true }
+);
 
-const revealObserver = new IntersectionObserver(entries => {
-    for (const entry of entries) {
-        if (entry.isIntersecting) {
-            entry.target.classList.add("show");
-        }
-    }
-}, { threshold: 0.12 });
 
-document.querySelectorAll(".reveal").forEach(el => {
+/* =========================================================
+   滚动出现动画
+========================================================= */
+
+const revealElements =
+    document.querySelectorAll(".reveal");
+
+const revealObserver =
+    new IntersectionObserver(
+        entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("show");
+                }
+            });
+        },
+        { threshold: 0.12 }
+    );
+
+revealElements.forEach(el => {
     revealObserver.observe(el);
 });
 
 
 /* =========================================================
-   自定义光标 + 滚动进度条 + 磁吸按钮 + 逐字浮现
+   设备判断与 DPR
 ========================================================= */
-(function () {
-    "use strict";
 
-    const isFinePointer = window.matchMedia("(pointer: fine)").matches;
-    const isMobile = () => window.innerWidth <= 850;
+const isMobile = () =>
+    window.innerWidth <= 700;
 
-    /* ---------------- 光标 ---------------- */
-    const cursorDot = document.getElementById("cursorDot");
-    const cursorRing = document.getElementById("cursorRing");
-
-    if (cursorDot && cursorRing && isFinePointer) {
-        let mouseX = window.innerWidth / 2;
-        let mouseY = window.innerHeight / 2;
-        let ringX = mouseX;
-        let ringY = mouseY;
-        let isVisible = false;
-
-        window.addEventListener("pointermove", e => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-
-            cursorDot.style.transform =
-                `translate3d(${mouseX}px, ${mouseY}px, 0)`;
-
-            if (!isVisible) {
-                isVisible = true;
-                cursorDot.classList.add("visible");
-                cursorRing.classList.add("visible");
-            }
-        }, { passive: true });
-
-        document.addEventListener("mouseleave", () => {
-            isVisible = false;
-            cursorDot.classList.remove("visible");
-            cursorRing.classList.remove("visible");
-        });
-
-        document.addEventListener("mouseenter", () => {
-            isVisible = true;
-            cursorDot.classList.add("visible");
-            cursorRing.classList.add("visible");
-        });
-
-        function animateRing() {
-            ringX += (mouseX - ringX) * 0.17;
-            ringY += (mouseY - ringY) * 0.17;
-
-            cursorRing.style.transform =
-                `translate3d(${ringX}px, ${ringY}px, 0)`;
-
-            requestAnimationFrame(animateRing);
-        }
-        animateRing();
-
-        const interactiveSelector =
-            "a, button, .btn, .card, .stat, .glass-card, .nav-button, .icon";
-
-        document.querySelectorAll(interactiveSelector).forEach(el => {
-            el.addEventListener("pointerenter", () => {
-                cursorRing.classList.add("active");
-                cursorDot.classList.add("active");
-            });
-
-            el.addEventListener("pointerleave", () => {
-                cursorRing.classList.remove("active");
-                cursorDot.classList.remove("active");
-            });
-        });
-    }
-
-    /* ---------------- 滚动进度条 ---------------- */
-    const scrollProgress = document.getElementById("scrollProgress");
-
-    if (scrollProgress) {
-        function updateScrollProgress() {
-            const h = document.documentElement.scrollHeight - window.innerHeight;
-            const p = h > 0 ? (window.scrollY / h) * 100 : 0;
-            scrollProgress.style.width = p + "%";
-        }
-
-        window.addEventListener("scroll", updateScrollProgress, { passive: true });
-        window.addEventListener("resize", updateScrollProgress, { passive: true });
-        updateScrollProgress();
-    }
-
-    /* ---------------- 磁吸按钮 ---------------- */
-    if (isFinePointer) {
-        const magnetTargets = document.querySelectorAll(".btn, .nav-button");
-
-        magnetTargets.forEach(el => {
-            el.addEventListener("pointerenter", () => {
-                el.style.transition =
-                    "transform .12s ease-out, box-shadow .35s ease";
-            });
-
-            el.addEventListener("pointermove", e => {
-                if (isMobile()) return;
-
-                const rect = el.getBoundingClientRect();
-                const x = e.clientX - rect.left - rect.width / 2;
-                const y = e.clientY - rect.top - rect.height / 2;
-
-                el.style.transform =
-                    `translate3d(${x * 0.30}px, ${y * 0.30}px, 0)`;
-            });
-
-            el.addEventListener("pointerleave", () => {
-                el.style.transition =
-                    "transform .55s cubic-bezier(.22,1,.36,1), box-shadow .35s ease";
-                el.style.transform = "translate3d(0,0,0)";
-            });
-        });
-    }
-
-    /* ---------------- 逐字浮现 ---------------- */
-    function splitChars(el) {
-        if (el.dataset.split === "1") return;
-
-        const text = el.textContent;
-
-        if (!text || !text.trim()) return;
-
-        el.dataset.split = "1";
-        el.textContent = "";
-
-        const chars = [...text];
-
-        chars.forEach((ch, i) => {
-            const span = document.createElement("span");
-            span.className = "char";
-            span.textContent = ch === " " ? "\u00A0" : ch;
-            span.style.transitionDelay = (i * 0.035) + "s";
-            el.appendChild(span);
-        });
-    }
-
-    document.querySelectorAll(
-        ".section-title h2, #about h2, .contact-box h2"
-    ).forEach(splitChars);
-
-})();
+const getDpr = () =>
+    Math.min(window.devicePixelRatio || 1, 1.6);
 
 
 /* =========================================================
-   鼠标聚光灯
+   背景粒子系统
 ========================================================= */
-const spotlight = document.getElementById("spotlight");
 
-if (spotlight) {
-    window.addEventListener("pointermove", event => {
-        spotlight.style.setProperty("--mx", event.clientX + "px");
-        spotlight.style.setProperty("--my", event.clientY + "px");
-        spotlight.classList.add("on");
-    }, { passive: true });
+const canvas =
+    document.getElementById("particles");
 
-    document.addEventListener("mouseleave", () => {
-        spotlight.classList.remove("on");
-    });
+const ctx =
+    canvas.getContext("2d", { alpha: true });
 
-    window.addEventListener("blur", () => {
-        spotlight.classList.remove("on");
-    });
+let particles = [];
+
+const mouse = {
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2,
+    targetX: window.innerWidth / 2,
+    targetY: window.innerHeight / 2,
+    active: false,
+    radius: 330,
+    vx: 0,
+    vy: 0
+};
+
+const explosions = [];
+
+
+/* =========================================================
+   粒子数量
+========================================================= */
+
+function getParticleCount() {
+
+    const area =
+        window.innerWidth *
+        window.innerHeight;
+
+    if (isMobile()) {
+        return Math.max(
+            70,
+            Math.min(120, Math.floor(area / 9500))
+        );
+    }
+
+    return Math.max(
+        140,
+        Math.min(240, Math.floor(area / 5900))
+    );
 }
 
 
 /* =========================================================
-   3D 卡片 · 修复版
-   - 监听器直接绑在卡片自身
-   - 不再使用内联 perspective()，交给父级 perspective 处理
-   - 鼠标到角时倾斜非常明显
+   创建背景粒子
 ========================================================= */
-(function () {
-    "use strict";
 
-    const heroCard = document.getElementById("heroCard");
-    if (!heroCard) return;
+function createParticles() {
 
-    /* 最大倾斜角度：数值越大越夸张 */
-    const MAX_TILT = 24;
+    particles = [];
 
-    let rafId = 0;
-    let targetRX = 0;
-    let targetRY = 0;
-    let targetZ = 0;
-    let curRX = 0;
-    let curRY = 0;
-    let curZ = 0;
-    let hovering = false;
+    const total = getParticleCount();
 
-    function applyTransform() {
-        curRX += (targetRX - curRX) * 0.18;
-        curRY += (targetRY - curRY) * 0.18;
-        curZ  += (targetZ  - curZ ) * 0.18;
+    for (let i = 0; i < total; i++) {
 
-        heroCard.style.transform =
-            `rotateX(${curRX.toFixed(2)}deg) ` +
-            `rotateY(${curRY.toFixed(2)}deg) ` +
-            `translateZ(${curZ.toFixed(2)}px)`;
+        const x = Math.random() * window.innerWidth;
+        const y = Math.random() * window.innerHeight;
 
-        if (
-            Math.abs(curRX - targetRX) > 0.05 ||
-            Math.abs(curRY - targetRY) > 0.05 ||
-            Math.abs(curZ - targetZ) > 0.1
-        ) {
-            rafId = requestAnimationFrame(applyTransform);
-        } else {
-            curRX = targetRX;
-            curRY = targetRY;
-            curZ  = targetZ;
-            heroCard.style.transform =
-                `rotateX(${curRX.toFixed(2)}deg) ` +
-                `rotateY(${curRY.toFixed(2)}deg) ` +
-                `translateZ(${curZ.toFixed(2)}px)`;
-            rafId = 0;
-        }
+        particles.push({
+            x,
+            y,
+            baseX: x,
+            baseY: y,
+            vx: (Math.random() - 0.5) * 0.45,
+            vy: (Math.random() - 0.5) * 0.45,
+            size: Math.random() * 2.2 + 0.7,
+            alpha: Math.random() * 0.55 + 0.18,
+            phase: Math.random() * Math.PI * 2,
+            pulse: Math.random() * 0.02 + 0.004,
+            layer: Math.random()
+        });
     }
-
-    function kick() {
-        if (!rafId) rafId = requestAnimationFrame(applyTransform);
-    }
-
-    /* 鼠标在卡片上移动 */
-    heroCard.addEventListener("pointermove", e => {
-        if (window.innerWidth <= 850) return;
-
-        const rect = heroCard.getBoundingClientRect();
-
-        /* 归一化 -0.5 ~ 0.5 */
-        const nx = (e.clientX - rect.left) / rect.width - 0.5;
-        const ny = (e.clientY - rect.top) / rect.height - 0.5;
-
-        /* 右上角：nx>0, ny<0 → rotY>0, rotX>0 → 右上抬起 */
-        targetRY =  nx * MAX_TILT;
-        targetRX = -ny * MAX_TILT;
-
-        /* 越靠角落，Z 抬起越多 */
-        targetZ = 12 + Math.hypot(nx, ny) * 34;
-        hovering = true;
-
-        /* 高光跟随 */
-        heroCard.style.setProperty(
-            "--card-mx",
-            (((e.clientX - rect.left) / rect.width) * 100).toFixed(2) + "%"
-        );
-        heroCard.style.setProperty(
-            "--card-my",
-            (((e.clientY - rect.top) / rect.height) * 100).toFixed(2) + "%"
-        );
-
-        /* 全息边框角度 */
-        const angle = Math.atan2(
-            e.clientY - (rect.top + rect.height / 2),
-            e.clientX - (rect.left + rect.width / 2)
-        ) * 180 / Math.PI + 90;
-
-        heroCard.style.setProperty("--holo-angle", angle.toFixed(1) + "deg");
-
-        kick();
-    }, { passive: true });
-
-    /* 鼠标离开卡片 —— 缓慢复位 */
-    heroCard.addEventListener("pointerleave", () => {
-        if (window.innerWidth <= 850) return;
-
-        hovering = false;
-
-        targetRX = 0;
-        targetRY = 0;
-        targetZ = 0;
-
-        heroCard.style.setProperty("--card-mx", "50%");
-        heroCard.style.setProperty("--card-my", "50%");
-
-        kick();
-    });
-
-    /* 窗口尺寸变了，强制复位 */
-    window.addEventListener("resize", () => {
-        if (window.innerWidth <= 850) {
-            heroCard.style.transform =
-                "rotateX(0deg) rotateY(0deg) translateZ(0)";
-            targetRX = curRX = 0;
-            targetRY = curRY = 0;
-            targetZ = curZ = 0;
-        }
-    });
-})();
+}
 
 
 /* =========================================================
-   粒子系统（未改动核心逻辑）
+   调整画布
 ========================================================= */
-(function () {
-    "use strict";
 
-    const canvas = document.getElementById("particles");
-    if (!canvas) return;
+function resizeCanvas() {
 
-    const ctx = canvas.getContext("2d", { alpha: true });
+    const dpr = getDpr();
 
-    let W = window.innerWidth;
-    let H = window.innerHeight;
-    let DPR = 1;
+    canvas.width =
+        Math.floor(window.innerWidth * dpr);
 
-    let running = true;
-    let lastFrame = performance.now();
-    let lastMeteor = performance.now();
+    canvas.height =
+        Math.floor(window.innerHeight * dpr);
 
-    const mouse = {
-        x: W * 0.5, y: H * 0.5,
-        tx: W * 0.5, ty: H * 0.5,
-        vx: 0, vy: 0,
-        active: false
-    };
+    canvas.style.width =
+        window.innerWidth + "px";
 
-    const particles = [];
-    const sparks = [];
-    const ripples = [];
-    const meteors = [];
-    const trail = [];
+    canvas.style.height =
+        window.innerHeight + "px";
 
-    const textMode = {
-        active: false,
-        phase: "idle",
-        start: 0,
-        delay: 380,
-        duration: 2200,
-        releaseDuration: 900,
-        points: null
-    };
+    ctx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+    );
 
-    const isMobile = () => window.innerWidth <= 700;
+    createParticles();
+}
 
-    const SPRITE_R = 64;
-    const SPRITE_SIZE = SPRITE_R * 2;
+window.addEventListener(
+    "resize",
+    resizeCanvas,
+    { passive: true }
+);
 
-    function makeSprite(r, g, b) {
-        const c = document.createElement("canvas");
-        c.width = SPRITE_SIZE;
-        c.height = SPRITE_SIZE;
 
-        const g2 = c.getContext("2d");
-        const grad = g2.createRadialGradient(
-            SPRITE_R, SPRITE_R, 0,
-            SPRITE_R, SPRITE_R, SPRITE_R
-        );
+/* =========================================================
+   鼠标
+========================================================= */
 
-        grad.addColorStop(0.00, "rgba(255,255,255,1)");
-        grad.addColorStop(0.12, `rgba(${r},${g},${b},0.98)`);
-        grad.addColorStop(0.34, `rgba(${r},${g},${b},0.44)`);
-        grad.addColorStop(0.65, `rgba(${r},${g},${b},0.13)`);
-        grad.addColorStop(1.00, `rgba(${r},${g},${b},0)`);
+window.addEventListener(
+    "mousemove",
+    event => {
 
-        g2.fillStyle = grad;
-        g2.fillRect(0, 0, SPRITE_SIZE, SPRITE_SIZE);
+        const oldX = mouse.targetX;
+        const oldY = mouse.targetY;
 
-        return c;
-    }
-
-    function makeStarSprite(r, g, b) {
-        const c = document.createElement("canvas");
-        c.width = SPRITE_SIZE;
-        c.height = SPRITE_SIZE;
-
-        const g2 = c.getContext("2d");
-        const cx = SPRITE_R;
-        const cy = SPRITE_R;
-
-        const grad = g2.createRadialGradient(cx, cy, 0, cx, cy, SPRITE_R);
-        grad.addColorStop(0.00, "rgba(255,255,255,1)");
-        grad.addColorStop(0.18, `rgba(${r},${g},${b},0.95)`);
-        grad.addColorStop(0.45, `rgba(${r},${g},${b},0.26)`);
-        grad.addColorStop(1.00, `rgba(${r},${g},${b},0)`);
-
-        g2.fillStyle = grad;
-        g2.beginPath();
-        g2.arc(cx, cy, SPRITE_R, 0, Math.PI * 2);
-        g2.fill();
-
-        g2.globalCompositeOperation = "lighter";
-        const starGrad = g2.createLinearGradient(cx - SPRITE_R, cy, cx + SPRITE_R, cy);
-        starGrad.addColorStop(0, "rgba(255,255,255,0)");
-        starGrad.addColorStop(0.5, "rgba(255,255,255,0.9)");
-        starGrad.addColorStop(1, "rgba(255,255,255,0)");
-
-        g2.fillStyle = starGrad;
-        g2.fillRect(cx - SPRITE_R, cy - 2.5, SPRITE_R * 2, 5);
-
-        const starGradV = g2.createLinearGradient(cx, cy - SPRITE_R, cx, cy + SPRITE_R);
-        starGradV.addColorStop(0, "rgba(255,255,255,0)");
-        starGradV.addColorStop(0.5, "rgba(255,255,255,0.9)");
-        starGradV.addColorStop(1, "rgba(255,255,255,0)");
-
-        g2.fillStyle = starGradV;
-        g2.fillRect(cx - 2.5, cy - SPRITE_R, 5, SPRITE_R * 2);
-
-        return c;
-    }
-
-    const IRIDESCENT = [
-        [255, 120, 180],
-        [255, 200, 120],
-        [140, 255, 180],
-        [120, 220, 255],
-        [200, 140, 255],
-    ];
-
-    const PALETTE = [
-        [129, 140, 248],
-        [167, 139, 250],
-        [96, 165, 250],
-        [217, 70, 239],
-        [186, 200, 255]
-    ];
-
-    const sprites = PALETTE.map(c => makeSprite(c[0], c[1], c[2]));
-    const starSprites = PALETTE.map(c => makeStarSprite(c[0], c[1], c[2]));
-    const iridescentSprites = IRIDESCENT.map(c => makeSprite(c[0], c[1], c[2]));
-
-    function particleCount() {
-        const area = W * H;
-        if (isMobile()) {
-            return Math.max(55, Math.min(100, Math.round(area / 12000)));
-        }
-        return Math.max(100, Math.min(180, Math.round(area / 7800)));
-    }
-
-    function createParticles() {
-        particles.length = 0;
-
-        const total = particleCount();
-
-        for (let i = 0; i < total; i++) {
-            const x = Math.random() * W;
-            const y = Math.random() * H;
-            const depth = Math.random();
-
-            const roll = Math.random();
-            let hue;
-            if (roll < 0.32) hue = 0;
-            else if (roll < 0.58) hue = 1;
-            else if (roll < 0.78) hue = 2;
-            else if (roll < 0.92) hue = 4;
-            else hue = 3;
-
-            const isStar = Math.random() < 0.08;
-            const isIridescent = !isStar && Math.random() < 0.02;
-
-            particles.push({
-                x, y,
-                hx: x, hy: y,
-                px: x, py: y,
-                vx: (Math.random() - 0.5) * 0.62,
-                vy: (Math.random() - 0.5) * 0.62,
-                depth,
-                r: 1.15 + depth * 2.75,
-                baseAlpha: 0.22 + depth * 0.54,
-                phase: Math.random() * Math.PI * 2,
-                twinkleSpeed: 0.5 + Math.random() * 1.7,
-                hue,
-                isStar,
-                isIridescent,
-                iriOffset: Math.random() * Math.PI * 2,
-                textX: undefined,
-                textY: undefined
-            });
-        }
-    }
-
-    function resize() {
-        DPR = Math.min(window.devicePixelRatio || 1, 1.75);
-
-        W = window.innerWidth;
-        H = window.innerHeight;
-
-        canvas.width = Math.round(W * DPR);
-        canvas.height = Math.round(H * DPR);
-        canvas.style.width = W + "px";
-        canvas.style.height = H + "px";
-
-        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-
-        mouse.x = mouse.tx = W * 0.5;
-        mouse.y = mouse.ty = H * 0.5;
-
-        textMode.points = null;
-
-        createParticles();
-    }
-
-    let resizeTimer = 0;
-    window.addEventListener("resize", () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(resize, 130);
-    }, { passive: true });
-
-    window.addEventListener("pointermove", event => {
-        const dx = event.clientX - mouse.tx;
-        const dy = event.clientY - mouse.ty;
-
-        mouse.tx = event.clientX;
-        mouse.ty = event.clientY;
-
-        mouse.vx = Math.max(-52, Math.min(52, dx));
-        mouse.vy = Math.max(-52, Math.min(52, dy));
+        mouse.targetX = event.clientX;
+        mouse.targetY = event.clientY;
         mouse.active = true;
-    }, { passive: true });
 
-    window.addEventListener("pointerleave", () => {
-        mouse.active = false;
-        mouse.vx = 0;
-        mouse.vy = 0;
-    }, { passive: true });
+        mouse.vx =
+            (mouse.targetX - oldX);
 
-    window.addEventListener("blur", () => {
+        mouse.vy =
+            (mouse.targetY - oldY);
+    },
+    { passive: true }
+);
+
+window.addEventListener(
+    "mouseleave",
+    () => {
         mouse.active = false;
+    },
+    { passive: true }
+);
+
+
+/* =========================================================
+   点击爆炸
+========================================================= */
+
+window.addEventListener(
+    "click",
+    event => {
+        createExplosion(
+            event.clientX,
+            event.clientY
+        );
+    }
+);
+
+function createExplosion(x, y) {
+
+    explosions.push({
+        x,
+        y,
+        radius: 10,
+        maxRadius: isMobile() ? 190 : 270,
+        alpha: 1,
+        shock: 1
     });
 
-    let lastTapTime = 0;
+    const radius =
+        isMobile() ? 190 : 270;
 
-    window.addEventListener("pointerdown", event => {
-        mouse.tx = event.clientX;
-        mouse.ty = event.clientY;
+    for (const p of particles) {
 
-        const now = performance.now();
-        const isDouble = (now - lastTapTime < 320);
+        const dx = p.x - x;
+        const dy = p.y - y;
 
-        explode(event.clientX, event.clientY);
+        const distance =
+            Math.sqrt(dx * dx + dy * dy);
 
-        if (isDouble) {
-            triggerFullShockwave(event.clientX, event.clientY);
-            triggerTextFormation();
-            lastTapTime = 0;
-        } else {
-            lastTapTime = now;
+        if (distance < radius) {
+
+            const safe =
+                Math.max(distance, 1);
+
+            const nx = dx / safe;
+            const ny = dy / safe;
+
+            const power =
+                1 - distance / radius;
+
+            const burst =
+                power *
+                (isMobile() ? 4.2 : 5.8);
+
+            p.vx += nx * burst;
+            p.vy += ny * burst;
         }
-    }, { passive: true });
+    }
+}
 
-    document.addEventListener("visibilitychange", () => {
-        running = document.visibilityState === "visible";
-        lastFrame = performance.now();
-    });
 
-    function explode(x, y) {
-        if (textMode.active) cancelTextMode();
+/* =========================================================
+   鼠标平滑移动
+========================================================= */
 
-        const mobile = isMobile();
+function updateMouse() {
 
-        ripples.push({
-            x, y,
-            radius: 6,
-            speed: mobile ? 7.5 : 10,
-            life: 1
-        });
+    const smoothing =
+        isMobile() ? 0.25 : 0.15;
 
-        const count = mobile ? 18 : 28;
+    const prevX = mouse.x;
+    const prevY = mouse.y;
 
-        for (let i = 0; i < count; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const speed = 2.0 + Math.random() * (mobile ? 4.5 : 6.8);
+    mouse.x +=
+        (mouse.targetX - mouse.x) *
+        smoothing;
 
-            sparks.push({
-                x, y,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                life: 1,
-                size: 1.1 + Math.random() * 2.0
-            });
-        }
+    mouse.y +=
+        (mouse.targetY - mouse.y) *
+        smoothing;
 
-        const radius = mobile ? 190 : 265;
-        const radius2 = radius * radius;
+    mouse.vx =
+        mouse.x - prevX;
 
-        for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
-            const dx = p.x - x;
-            const dy = p.y - y;
-            const d2 = dx * dx + dy * dy;
+    mouse.vy =
+        mouse.y - prevY;
+}
 
-            if (d2 > radius2 || d2 < 0.01) continue;
 
-            const d = Math.sqrt(d2);
-            const f = 1 - d / radius;
-            const push = f * f * (mobile ? 6.5 : 9);
+/* =========================================================
+   更新粒子
+========================================================= */
 
-            p.vx += (dx / d) * push;
-            p.vy += (dy / d) * push;
+function updateParticle(p, time) {
+
+    /* 自然漂浮 */
+    p.vx +=
+        Math.sin(
+            time * 0.00042 +
+            p.phase
+        ) *
+        p.pulse;
+
+    p.vy +=
+        Math.cos(
+            time * 0.00034 +
+            p.phase
+        ) *
+        p.pulse;
+
+
+    /* 鼠标磁场 */
+    if (mouse.active) {
+
+        const dx =
+            mouse.x - p.x;
+
+        const dy =
+            mouse.y - p.y;
+
+        const distance =
+            Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
+
+        if (distance < mouse.radius) {
+
+            const influence =
+                1 -
+                distance /
+                mouse.radius;
+
+            /*
+                越靠近中心越强，
+                同时加入一点切向力，
+                形成轻微旋转磁场。
+            */
+
+            const safe =
+                Math.max(distance, 1);
+
+            const nx = dx / safe;
+            const ny = dy / safe;
+
+            const tangentX = -ny;
+            const tangentY = nx;
+
+            const pull =
+                influence *
+                influence *
+                (isMobile() ? 0.11 : 0.15);
+
+            const swirl =
+                influence *
+                (isMobile() ? 0.017 : 0.027);
+
+            p.vx +=
+                nx * pull +
+                tangentX * swirl;
+
+            p.vy +=
+                ny * pull +
+                tangentY * swirl;
+
+            /*
+                鼠标快速移动时，
+                粒子获得少量拖拽动量。
+            */
+
+            const drag =
+                influence *
+                0.025;
+
+            p.vx +=
+                mouse.vx * drag;
+
+            p.vy +=
+                mouse.vy * drag;
         }
     }
 
-    function cancelTextMode() {
-        textMode.active = false;
-        textMode.phase = "idle";
 
-        for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
-            p.textX = undefined;
-            p.textY = undefined;
-        }
-    }
+    /* 回弹到初始区域 */
+    const homeDX =
+        p.baseX - p.x;
 
-    function triggerFullShockwave(x, y) {
-        ripples.push({
-            x, y,
-            radius: 8,
-            speed: isMobile() ? 14 : 18,
-            life: 1,
-            maxRadius: Math.max(W, H) * 1.4
-        });
+    const homeDY =
+        p.baseY - p.y;
 
-        ripples.push({
-            x, y,
-            radius: 4,
-            speed: isMobile() ? 10 : 13,
-            life: 0.85,
-            maxRadius: Math.max(W, H) * 1.2
-        });
-
-        const sparkCount = isMobile() ? 40 : 64;
-        for (let i = 0; i < sparkCount; i++) {
-            const angle = (i / sparkCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.15;
-            const speed = 5 + Math.random() * 9;
-
-            sparks.push({
-                x, y,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                life: 1,
-                size: 1.5 + Math.random() * 2.2
-            });
-        }
-
-        for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
-            const dx = p.x - x;
-            const dy = p.y - y;
-            const d = Math.max(1, Math.hypot(dx, dy));
-
-            const falloff = Math.max(0, 1 - d / 720);
-            const force = 11 * falloff * falloff;
-
-            p.vx += (dx / d) * force;
-            p.vy += (dy / d) * force;
-        }
-    }
-
-    function buildTextPoints() {
-        if (textMode.points) return textMode.points;
-
-        const off = document.createElement("canvas");
-        off.width = W;
-        off.height = H;
-
-        const octx = off.getContext("2d");
-
-        const fontSize = Math.min(W * 0.20, H * 0.26, 240);
-
-        octx.fillStyle = "#fff";
-        octx.font = `900 ${fontSize}px -apple-system, BlinkMacSystemFont, "Microsoft YaHei", "PingFang SC", sans-serif`;
-        octx.textAlign = "center";
-        octx.textBaseline = "middle";
-        octx.fillText("抓号器", W / 2, H / 2);
-
-        const data = octx.getImageData(0, 0, W, H).data;
-        const points = [];
-
-        const step = Math.max(4, Math.floor(Math.min(W, H) / 180));
-
-        for (let y = 0; y < H; y += step) {
-            for (let x = 0; x < W; x += step) {
-                const idx = (y * W + x) * 4;
-                if (data[idx + 3] > 128) {
-                    points.push({ x, y });
-                }
-            }
-        }
-
-        for (let i = points.length - 1; i > 0; i--) {
-            const j = (Math.random() * (i + 1)) | 0;
-            const tmp = points[i];
-            points[i] = points[j];
-            points[j] = tmp;
-        }
-
-        textMode.points = points;
-        return points;
-    }
-
-    function triggerTextFormation() {
-        const points = buildTextPoints();
-        if (!points.length) return;
-
-        const count = points.length;
-
-        for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
-            const pt = points[i % count];
-
-            const jitter = (i >= count) ? 3.5 : 0.8;
-
-            p.textX = pt.x + (Math.random() - 0.5) * jitter;
-            p.textY = pt.y + (Math.random() - 0.5) * jitter;
-        }
-
-        textMode.active = true;
-        textMode.phase = "delay";
-        textMode.start = performance.now();
-    }
-
-    function updateSparks(step) {
-        for (let i = sparks.length - 1; i >= 0; i--) {
-            const s = sparks[i];
-
-            s.x += s.vx * step;
-            s.y += s.vy * step;
-
-            const damp = Math.pow(0.955, step);
-            s.vx *= damp;
-            s.vy *= damp;
-
-            s.life -= 0.026 * step;
-
-            if (s.life <= 0) sparks.splice(i, 1);
-        }
-    }
-
-    function updateRipples(step) {
-        for (let i = ripples.length - 1; i >= 0; i--) {
-            const r = ripples[i];
-
-            r.radius += r.speed * step;
-            r.life -= 0.022 * step;
-
-            if (
-                r.life <= 0 ||
-                (r.maxRadius && r.radius > r.maxRadius)
-            ) {
-                ripples.splice(i, 1);
-            }
-        }
-    }
-
-    function updateTrail(step) {
-        if (mouse.active && !isMobile()) {
-            trail.push({ x: mouse.x, y: mouse.y, life: 1 });
-            if (trail.length > 26) trail.shift();
-        }
-
-        for (let i = trail.length - 1; i >= 0; i--) {
-            trail[i].life -= 0.05 * step;
-            if (trail[i].life <= 0) trail.splice(i, 1);
-        }
-    }
-
-    function updateMeteors(step, now) {
-        const interval = isMobile() ? 6000 : 4400;
-
-        if (now - lastMeteor > interval) {
-            lastMeteor = now;
-
-            meteors.push({
-                x: Math.random() * W * 0.75,
-                y: Math.random() * H * 0.30,
-                vx: 7.0 + Math.random() * 3.5,
-                vy: 3.0 + Math.random() * 1.8,
-                life: 1,
-                len: 90 + Math.random() * 70
-            });
-        }
-
-        for (let i = meteors.length - 1; i >= 0; i--) {
-            const m = meteors[i];
-
-            m.x += m.vx * step;
-            m.y += m.vy * step;
-            m.life -= 0.012 * step;
-
-            if (m.life <= 0 || m.x > W + 120 || m.y > H + 120) {
-                meteors.splice(i, 1);
-            }
-        }
-    }
-
-    function update(dt, now) {
-        const step = dt / 16.667;
-
-        mouse.x += (mouse.tx - mouse.x) * 0.16;
-        mouse.y += (mouse.ty - mouse.y) * 0.16;
-        mouse.vx *= Math.pow(0.90, step);
-        mouse.vy *= Math.pow(0.90, step);
-
-        const parX = (mouse.x - W * 0.5) * 0.022;
-        const parY = (mouse.y - H * 0.5) * 0.022;
-
-        let inAttract = false;
-
-        if (textMode.active) {
-            const elapsed = now - textMode.start;
-
-            if (textMode.phase === "delay") {
-                if (elapsed >= textMode.delay) {
-                    textMode.phase = "attract";
-                    textMode.start = now;
-                }
-            } else if (textMode.phase === "attract") {
-                const t = elapsed / textMode.duration;
-
-                if (t >= 1) {
-                    textMode.phase = "release";
-                    textMode.start = now;
-
-                    const cx = W * 0.5;
-                    const cy = H * 0.5;
-
-                    for (let i = 0; i < particles.length; i++) {
-                        const p = particles[i];
-
-                        const dx = p.x - cx;
-                        const dy = p.y - cy;
-                        const d = Math.max(1, Math.hypot(dx, dy));
-
-                        const scatter = 1.4 + Math.random() * 2.6;
-
-                        p.vx = (dx / d) * scatter + (Math.random() - 0.5) * 1.5;
-                        p.vy = (dy / d) * scatter + (Math.random() - 0.5) * 1.5;
-
-                        p.hx = W * 0.5 + (Math.random() - 0.5) * W * 0.92;
-                        p.hy = H * 0.5 + (Math.random() - 0.5) * H * 0.92;
-
-                        p.textX = undefined;
-                        p.textY = undefined;
-                    }
-                } else {
-                    inAttract = true;
-
-                    const fade = t < 0.70
-                        ? 1
-                        : Math.max(0, 1 - (t - 0.70) / 0.30);
-
-                    const k = 0.016 * fade;
-                    const damp = Math.pow(0.84, step);
-
-                    for (let i = 0; i < particles.length; i++) {
-                        const p = particles[i];
-                        if (p.textX === undefined) continue;
-
-                        p.vx += (p.textX - p.x) * k * step;
-                        p.vy += (p.textY - p.y) * k * step;
-
-                        p.vx *= damp;
-                        p.vy *= damp;
-
-                        const sp2 = p.vx * p.vx + p.vy * p.vy;
-                        if (sp2 > 49) {
-                            const sp = Math.sqrt(sp2);
-                            p.vx = p.vx / sp * 7;
-                            p.vy = p.vy / sp * 7;
-                        }
-
-                        p.x += p.vx * step;
-                        p.y += p.vy * step;
-
-                        p.px = p.x + parX * p.depth;
-                        p.py = p.y + parY * p.depth;
-                    }
-                }
-            } else if (textMode.phase === "release") {
-                if (elapsed >= textMode.releaseDuration) {
-                    textMode.active = false;
-                    textMode.phase = "idle";
-                }
-            }
-        }
-
-        if (!inAttract) {
-            const mRadius = isMobile() ? 175 : 250;
-            const mRadius2 = mRadius * mRadius;
-
-            for (let i = 0; i < particles.length; i++) {
-                const p = particles[i];
-
-                p.vx += Math.sin(now * 0.00062 + p.phase) * 0.008 * step;
-                p.vy += Math.cos(now * 0.00054 + p.phase * 1.37) * 0.008 * step;
-
-                if (mouse.active) {
-                    const dx = p.x - mouse.x;
-                    const dy = p.y - mouse.y;
-                    const d2 = dx * dx + dy * dy;
-
-                    if (d2 < mRadius2 && d2 > 1) {
-                        const d = Math.sqrt(d2);
-                        const f = 1 - d / mRadius;
-                        const f2 = f * f;
-
-                        const nx = dx / d;
-                        const ny = dy / d;
-
-                        p.vx -= nx * f2 * 0.28 * step;
-                        p.vy -= ny * f2 * 0.28 * step;
-
-                        p.vx += -ny * f2 * 0.12 * step;
-                        p.vy += nx * f2 * 0.12 * step;
-
-                        p.vx += mouse.vx * f * 0.032 * step;
-                        p.vy += mouse.vy * f * 0.032 * step;
-                    }
-                }
-
-                p.vx += (p.hx - p.x) * 0.0016 * step;
-                p.vy += (p.hy - p.y) * 0.0016 * step;
-
-                const damp = Math.pow(0.978, step);
-                p.vx *= damp;
-                p.vy *= damp;
-
-                const sp2 = p.vx * p.vx + p.vy * p.vy;
-                if (sp2 > 64) {
-                    const sp = Math.sqrt(sp2);
-                    p.vx = p.vx / sp * 8;
-                    p.vy = p.vy / sp * 8;
-                }
-
-                p.x += p.vx * step;
-                p.y += p.vy * step;
-
-                if (p.x < -60) p.x = W + 60;
-                else if (p.x > W + 60) p.x = -60;
-
-                if (p.y < -60) p.y = H + 60;
-                else if (p.y > H + 60) p.y = -60;
-
-                p.px = p.x + parX * p.depth;
-                p.py = p.y + parY * p.depth;
-            }
-        }
-
-        updateSparks(step);
-        updateRipples(step);
-        updateTrail(step);
-        updateMeteors(step, now);
-    }
-
-    const LINE_LEVELS = 5;
-    const lineBuckets = [];
-    for (let i = 0; i < LINE_LEVELS; i++) lineBuckets.push([]);
-
-    function drawConnections() {
-        let maxD;
-        let alphaScale = 1;
-
-        if (textMode.active) {
-            if (textMode.phase === "attract") {
-                maxD = isMobile() ? 46 : 60;
-                alphaScale = 0.65;
-            } else {
-                maxD = isMobile() ? 65 : 85;
-                alphaScale = 0.8;
-            }
-        } else {
-            maxD = isMobile() ? 115 : 150;
-        }
-
-        const maxD2 = maxD * maxD;
-
-        for (let i = 0; i < LINE_LEVELS; i++) lineBuckets[i].length = 0;
-
-        for (let i = 0; i < particles.length; i++) {
-            const a = particles[i];
-
-            for (let j = i + 1; j < particles.length; j++) {
-                const b = particles[j];
-
-                const dx = a.px - b.px;
-                const dy = a.py - b.py;
-                const d2 = dx * dx + dy * dy;
-
-                if (d2 > maxD2) continue;
-
-                const d = Math.sqrt(d2);
-                const f = 1 - d / maxD;
-                const strength = f * f * (0.35 + (a.depth + b.depth) * 0.45);
-
-                let lvl = (strength * LINE_LEVELS) | 0;
-                if (lvl < 0) continue;
-                if (lvl >= LINE_LEVELS) lvl = LINE_LEVELS - 1;
-
-                lineBuckets[lvl].push(a.px, a.py, b.px, b.py);
-            }
-        }
-
-        for (let lvl = 0; lvl < LINE_LEVELS; lvl++) {
-            const bucket = lineBuckets[lvl];
-            if (!bucket.length) continue;
-
-            const alpha = (0.048 + lvl * 0.058) * alphaScale;
-            const lw = 1.0 + lvl * 0.32;
-
-            ctx.strokeStyle = "rgba(155,168,255," + alpha + ")";
-            ctx.lineWidth = lw;
-            ctx.lineCap = "round";
-            ctx.beginPath();
-
-            for (let k = 0; k < bucket.length; k += 4) {
-                ctx.moveTo(bucket[k], bucket[k + 1]);
-                ctx.lineTo(bucket[k + 2], bucket[k + 3]);
-            }
-
-            ctx.stroke();
-        }
-    }
-
-    function drawMouseLinks() {
-        if (!mouse.active) return;
-        if (textMode.active && textMode.phase === "attract") return;
-
-        const maxD = isMobile() ? 145 : 200;
-        const maxD2 = maxD * maxD;
-
-        ctx.strokeStyle = "rgba(200,142,255,0.22)";
-        ctx.lineWidth = 1.3;
-        ctx.lineCap = "round";
-        ctx.beginPath();
-
-        let drawn = 0;
-
-        for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
-
-            const dx = mouse.x - p.px;
-            const dy = mouse.y - p.py;
-            const d2 = dx * dx + dy * dy;
-
-            if (d2 > maxD2) continue;
-
-            ctx.moveTo(p.px, p.py);
-            ctx.lineTo(mouse.x, mouse.y);
-
-            if (++drawn > 48) break;
-        }
-
-        ctx.stroke();
-    }
-
-    function drawMouseGlow() {
-        if (!mouse.active) return;
-
-        const r = isMobile() ? 120 : 180;
-
-        const g = ctx.createRadialGradient(
-            mouse.x, mouse.y, 0,
-            mouse.x, mouse.y, r
+    const homeDistance =
+        Math.sqrt(
+            homeDX * homeDX +
+            homeDY * homeDY
         );
 
-        g.addColorStop(0, "rgba(129,140,248,0.14)");
-        g.addColorStop(0.4, "rgba(139,92,246,0.06)");
-        g.addColorStop(1, "rgba(139,92,246,0)");
+    if (homeDistance > 3) {
 
-        ctx.fillStyle = g;
+        const spring =
+            Math.min(
+                homeDistance * 0.0008,
+                0.06
+            );
+
+        p.vx +=
+            homeDX * spring;
+
+        p.vy +=
+            homeDY * spring;
+    }
+
+
+    /* 边缘柔和回推 */
+    const edge = 25;
+
+    if (p.x < edge) {
+        p.vx += (edge - p.x) * 0.0014;
+    }
+
+    if (p.x > window.innerWidth - edge) {
+        p.vx -=
+            (
+                p.x -
+                (window.innerWidth - edge)
+            ) * 0.0014;
+    }
+
+    if (p.y < edge) {
+        p.vy += (edge - p.y) * 0.0014;
+    }
+
+    if (p.y > window.innerHeight - edge) {
+        p.vy -=
+            (
+                p.y -
+                (window.innerHeight - edge)
+            ) * 0.0014;
+    }
+
+
+    /* 限速 */
+    const maxSpeed =
+        isMobile() ? 5.2 : 7.2;
+
+    const speed =
+        Math.sqrt(
+            p.vx * p.vx +
+            p.vy * p.vy
+        );
+
+    if (speed > maxSpeed) {
+
+        p.vx =
+            (p.vx / speed) *
+            maxSpeed;
+
+        p.vy =
+            (p.vy / speed) *
+            maxSpeed;
+    }
+
+
+    /* 惯性与摩擦 */
+    p.vx *= 0.982;
+    p.vy *= 0.982;
+
+    p.x += p.vx;
+    p.y += p.vy;
+}
+
+
+/* =========================================================
+   粒子绘制
+========================================================= */
+
+function drawParticles() {
+
+    for (const p of particles) {
+
+        const glow =
+            p.size *
+            (p.layer < 0.35 ? 3 : 4);
+
+        const gradient =
+            ctx.createRadialGradient(
+                p.x,
+                p.y,
+                0,
+                p.x,
+                p.y,
+                glow
+            );
+
+        gradient.addColorStop(
+            0,
+            `rgba(190, 198, 255, ${p.alpha})`
+        );
+
+        gradient.addColorStop(
+            0.35,
+            `rgba(129, 140, 248, ${p.alpha * 0.40})`
+        );
+
+        gradient.addColorStop(
+            1,
+            "rgba(99,102,241,0)"
+        );
+
         ctx.beginPath();
-        ctx.arc(mouse.x, mouse.y, r, 0, Math.PI * 2);
+
+        ctx.arc(
+            p.x,
+            p.y,
+            glow,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        ctx.beginPath();
+
+        ctx.arc(
+            p.x,
+            p.y,
+            p.size,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fillStyle =
+            `rgba(
+                224,
+                231,
+                255,
+                ${Math.min(p.alpha + 0.25, 1)}
+            )`;
+
         ctx.fill();
     }
+}
 
-    function drawTrail() {
-        if (trail.length < 2) return;
 
-        for (let i = 0; i < trail.length; i++) {
-            const t = trail[i];
-            const f = i / trail.length;
-            const size = 9 + f * 30;
+/* =========================================================
+   粒子连线 —— 空间网格优化
+========================================================= */
 
-            ctx.globalAlpha = t.life * f * 0.24;
-            ctx.drawImage(
-                sprites[1],
-                t.x - size * 0.5,
-                t.y - size * 0.5,
-                size, size
+function drawConnections() {
+
+    const cellSize =
+        isMobile() ? 105 : 120;
+
+    const grid = new Map();
+
+    for (let i = 0; i < particles.length; i++) {
+
+        const p = particles[i];
+
+        const gx =
+            Math.floor(p.x / cellSize);
+
+        const gy =
+            Math.floor(p.y / cellSize);
+
+        const key =
+            gx + "," + gy;
+
+        if (!grid.has(key)) {
+            grid.set(key, []);
+        }
+
+        grid.get(key).push(i);
+    }
+
+
+    const limit =
+        isMobile() ? 95 : 125;
+
+
+    for (let i = 0; i < particles.length; i++) {
+
+        const a = particles[i];
+
+        const gx =
+            Math.floor(a.x / cellSize);
+
+        const gy =
+            Math.floor(a.y / cellSize);
+
+
+        for (let ox = -1; ox <= 1; ox++) {
+
+            for (let oy = -1; oy <= 1; oy++) {
+
+                const bucket =
+                    grid.get(
+                        (gx + ox) +
+                        "," +
+                        (gy + oy)
+                    );
+
+                if (!bucket) continue;
+
+
+                for (const j of bucket) {
+
+                    if (j <= i) continue;
+
+                    const b = particles[j];
+
+                    const dx =
+                        a.x - b.x;
+
+                    const dy =
+                        a.y - b.y;
+
+                    const distance =
+                        Math.sqrt(
+                            dx * dx +
+                            dy * dy
+                        );
+
+                    if (distance < limit) {
+
+                        const alpha =
+                            (
+                                1 -
+                                distance / limit
+                            ) *
+                            (isMobile() ? 0.09 : 0.14);
+
+                        ctx.beginPath();
+
+                        ctx.moveTo(
+                            a.x,
+                            a.y
+                        );
+
+                        ctx.lineTo(
+                            b.x,
+                            b.y
+                        );
+
+                        ctx.strokeStyle =
+                            `rgba(
+                                129,
+                                140,
+                                248,
+                                ${alpha}
+                            )`;
+
+                        ctx.lineWidth = 1;
+
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+/* =========================================================
+   鼠标磁场连线
+========================================================= */
+
+function drawMouseConnections() {
+
+    if (!mouse.active) return;
+
+    const limit =
+        isMobile() ? 150 : 220;
+
+    for (const p of particles) {
+
+        const dx =
+            mouse.x - p.x;
+
+        const dy =
+            mouse.y - p.y;
+
+        const distance =
+            Math.sqrt(
+                dx * dx +
+                dy * dy
             );
-        }
 
-        ctx.globalAlpha = 1;
+        if (distance < limit) {
+
+            const alpha =
+                (
+                    1 -
+                    distance / limit
+                ) * 0.42;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                p.x,
+                p.y
+            );
+
+            ctx.lineTo(
+                mouse.x,
+                mouse.y
+            );
+
+            ctx.strokeStyle =
+                `rgba(
+                    192,
+                    132,
+                    252,
+                    ${alpha}
+                )`;
+
+            ctx.lineWidth = 1.1;
+            ctx.stroke();
+        }
+    }
+}
+
+
+/* =========================================================
+   鼠标光晕
+========================================================= */
+
+function drawMouseGlow() {
+
+    if (!mouse.active) return;
+
+    const radius =
+        isMobile() ? 170 : 250;
+
+    const gradient =
+        ctx.createRadialGradient(
+            mouse.x,
+            mouse.y,
+            0,
+            mouse.x,
+            mouse.y,
+            radius
+        );
+
+    gradient.addColorStop(
+        0,
+        "rgba(99,102,241,0.15)"
+    );
+
+    gradient.addColorStop(
+        0.35,
+        "rgba(139,92,246,0.07)"
+    );
+
+    gradient.addColorStop(
+        1,
+        "rgba(139,92,246,0)"
+    );
+
+    ctx.beginPath();
+
+    ctx.arc(
+        mouse.x,
+        mouse.y,
+        radius,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fillStyle = gradient;
+    ctx.fill();
+}
+
+
+/* =========================================================
+   鼠标拖尾
+========================================================= */
+
+const trail = [];
+
+function updateTrail() {
+
+    if (!mouse.active) return;
+
+    trail.push({
+        x: mouse.x,
+        y: mouse.y,
+        alpha: 0.32
+    });
+
+    const maxTrail =
+        isMobile() ? 14 : 26;
+
+    if (trail.length > maxTrail) {
+        trail.shift();
     }
 
-    function drawParticles(now) {
-        for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
+    for (let i = 0; i < trail.length; i++) {
 
-            const tw = 0.70 + Math.sin(
-                now * 0.0011 * p.twinkleSpeed + p.phase
-            ) * 0.30;
+        trail[i].alpha *= 0.91;
 
-            const alpha = p.baseAlpha * tw;
-            const size = p.r * 20 * (0.9 + tw * 0.22);
+        if (trail[i].alpha < 0.01) {
+            trail.splice(i, 1);
+            i--;
+        }
+    }
+}
 
-            ctx.globalAlpha = alpha > 1 ? 1 : alpha;
+function drawTrail() {
 
-            if (p.isIridescent) {
-                const cycle = Math.sin(
-                    now * 0.0009 + p.iriOffset
-                ) * 0.5 + 0.5;
+    if (trail.length < 2) return;
 
-                const idx = Math.min(
-                    iridescentSprites.length - 1,
-                    Math.floor(cycle * iridescentSprites.length)
-                );
+    for (let i = 1; i < trail.length; i++) {
 
-                ctx.drawImage(
-                    iridescentSprites[idx],
-                    p.px - size * 0.5,
-                    p.py - size * 0.5,
-                    size * 1.15, size * 1.15
-                );
-            } else if (p.isStar) {
-                ctx.drawImage(
-                    starSprites[p.hue],
-                    p.px - size * 0.6,
-                    p.py - size * 0.6,
-                    size * 1.25, size * 1.25
-                );
-            } else {
-                ctx.drawImage(
-                    sprites[p.hue],
-                    p.px - size * 0.5,
-                    p.py - size * 0.5,
-                    size, size
-                );
+        const a = trail[i - 1];
+        const b = trail[i];
+
+        const strength =
+            (i / trail.length) *
+            b.alpha;
+
+        ctx.beginPath();
+
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+
+        ctx.strokeStyle =
+            `rgba(
+                139,
+                92,
+                246,
+                ${strength}
+            )`;
+
+        ctx.lineWidth =
+            isMobile()
+                ? 1.2
+                : 2.0;
+
+        ctx.lineCap = "round";
+        ctx.stroke();
+    }
+}
+
+
+/* =========================================================
+   爆炸冲击波
+========================================================= */
+
+function drawExplosions() {
+
+    for (
+        let i = explosions.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        const e = explosions[i];
+
+        e.radius +=
+            isMobile() ? 7 : 9;
+
+        e.alpha *= 0.95;
+
+        const progress =
+            e.radius /
+            e.maxRadius;
+
+        if (
+            progress >= 1 ||
+            e.alpha < 0.02
+        ) {
+            explosions.splice(i, 1);
+            continue;
+        }
+
+        /* 外圈 */
+        ctx.beginPath();
+
+        ctx.arc(
+            e.x,
+            e.y,
+            e.radius,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.strokeStyle =
+            `rgba(
+                167,
+                139,
+                250,
+                ${e.alpha}
+            )`;
+
+        ctx.lineWidth =
+            Math.max(
+                1,
+                4 * (1 - progress)
+            );
+
+        ctx.stroke();
+
+        /* 内圈 */
+        if (e.radius > 28) {
+
+            ctx.beginPath();
+
+            ctx.arc(
+                e.x,
+                e.y,
+                e.radius * 0.62,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.strokeStyle =
+                `rgba(
+                    96,
+                    165,
+                    250,
+                    ${e.alpha * 0.40}
+                )`;
+
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        /* 中央闪光 */
+        const flash =
+            Math.max(
+                0,
+                1 - progress * 3
+            );
+
+        if (flash > 0) {
+
+            ctx.beginPath();
+
+            ctx.arc(
+                e.x,
+                e.y,
+                12 + flash * 16,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fillStyle =
+                `rgba(
+                    255,
+                    255,
+                    255,
+                    ${flash * 0.18}
+                )`;
+
+            ctx.fill();
+        }
+    }
+}
+
+
+/* =========================================================
+   3D 卡片跟随鼠标
+========================================================= */
+
+const heroCardArea =
+    document.getElementById("heroCardArea");
+
+const heroCard =
+    document.getElementById("heroCard");
+
+if (heroCardArea && heroCard) {
+
+    heroCardArea.addEventListener(
+        "mousemove",
+        event => {
+
+            if (isMobile()) return;
+
+            const rect =
+                heroCardArea.getBoundingClientRect();
+
+            const px =
+                (event.clientX - rect.left) /
+                rect.width;
+
+            const py =
+                (event.clientY - rect.top) /
+                rect.height;
+
+            const rotateY =
+                (px - 0.5) * 12;
+
+            const rotateX =
+                (0.5 - py) * 12;
+
+            heroCard.style.transform =
+                `perspective(1000px)
+                 rotateX(${rotateX}deg)
+                 rotateY(${rotateY}deg)
+                 translateY(-6px)`;
+        }
+    );
+
+    heroCardArea.addEventListener(
+        "mouseleave",
+        () => {
+
+            heroCard.style.transform =
+                "perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)";
+        }
+    );
+}
+
+
+/* =========================================================
+   视差
+========================================================= */
+
+let scrollYCurrent = 0;
+
+window.addEventListener(
+    "scroll",
+    () => {
+
+        scrollYCurrent =
+            window.scrollY;
+
+        const grid =
+            document.querySelector(".bg-grid");
+
+        if (grid) {
+
+            grid.style.transform =
+                `perspective(700px)
+                 rotateX(62deg)
+                 translateY(calc(12% + ${scrollYCurrent * 0.02}px))
+                 translateX(${scrollYCurrent * 0.04}px)`;
+        }
+
+    },
+    { passive: true }
+);
+
+
+/* =========================================================
+   欢迎粒子汇聚：抓号器
+========================================================= */
+
+const introCanvas =
+    document.getElementById("introParticles");
+
+const introCtx =
+    introCanvas.getContext("2d", {
+        alpha: true
+    });
+
+let introParticles = [];
+let introStart = performance.now();
+let introRunning = true;
+
+
+/*
+   生成“抓号器”的目标点。
+   使用 Canvas 测量文字后采样像素。
+*/
+function buildTextTargets() {
+
+    const off =
+        document.createElement("canvas");
+
+    const offCtx =
+        off.getContext("2d");
+
+    const size =
+        isMobile() ? 76 : 118;
+
+    off.width =
+        isMobile() ? 330 : 560;
+
+    off.height =
+        isMobile() ? 130 : 190;
+
+    offCtx.clearRect(
+        0,
+        0,
+        off.width,
+        off.height
+    );
+
+    offCtx.font =
+        `900 ${size}px "Microsoft YaHei", "Segoe UI", sans-serif`;
+
+    offCtx.textAlign = "center";
+    offCtx.textBaseline = "middle";
+    offCtx.fillStyle = "#ffffff";
+
+    offCtx.fillText(
+        "抓号器",
+        off.width / 2,
+        off.height / 2
+    );
+
+    const data =
+        offCtx.getImageData(
+            0,
+            0,
+            off.width,
+            off.height
+        ).data;
+
+    const targets = [];
+
+    const step =
+        isMobile() ? 5 : 6;
+
+    for (
+        let y = 0;
+        y < off.height;
+        y += step
+    ) {
+
+        for (
+            let x = 0;
+            x < off.width;
+            x += step
+        ) {
+
+            const index =
+                (
+                    y *
+                    off.width +
+                    x
+                ) *
+                4;
+
+            if (data[index + 3] > 150) {
+
+                targets.push({
+                    x,
+                    y
+                });
             }
         }
-
-        ctx.globalAlpha = 1;
     }
 
-    function drawSparks() {
-        for (let i = 0; i < sparks.length; i++) {
-            const s = sparks[i];
-            const a = s.life * 0.85;
+    return {
+        width: off.width,
+        height: off.height,
+        targets
+    };
+}
 
-            const tx = s.x - s.vx * 3.2;
-            const ty = s.y - s.vy * 3.2;
 
-            const grad = ctx.createLinearGradient(tx, ty, s.x, s.y);
-            grad.addColorStop(0, "rgba(167,139,250,0)");
-            grad.addColorStop(1, "rgba(233,213,255," + a + ")");
+function setupIntroCanvas() {
 
-            ctx.strokeStyle = grad;
-            ctx.lineWidth = s.size * (0.6 + s.life * 0.9);
-            ctx.lineCap = "round";
+    const dpr = getDpr();
 
-            ctx.beginPath();
-            ctx.moveTo(tx, ty);
-            ctx.lineTo(s.x, s.y);
-            ctx.stroke();
-        }
-    }
+    introCanvas.width =
+        Math.floor(
+            window.innerWidth *
+            dpr
+        );
 
-    function drawRipples() {
-        for (let i = 0; i < ripples.length; i++) {
-            const r = ripples[i];
+    introCanvas.height =
+        Math.floor(
+            window.innerHeight *
+            dpr
+        );
 
-            ctx.beginPath();
-            ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
-            ctx.strokeStyle = "rgba(167,139,250," + (r.life * 0.65) + ")";
-            ctx.lineWidth = 1.5 + r.life * 3.5;
-            ctx.stroke();
+    introCanvas.style.width =
+        window.innerWidth + "px";
 
-            if (r.radius > 20) {
-                ctx.beginPath();
-                ctx.arc(r.x, r.y, r.radius * 0.72, 0, Math.PI * 2);
-                ctx.strokeStyle = "rgba(96,165,250," + (r.life * 0.36) + ")";
-                ctx.lineWidth = 1.4;
-                ctx.stroke();
+    introCanvas.style.height =
+        window.innerHeight + "px";
+
+    introCtx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+    );
+
+    const text =
+        buildTextTargets();
+
+    const startX =
+        window.innerWidth / 2 -
+        text.width / 2;
+
+    /*
+       让文字在首屏标题附近出现
+    */
+    const startY =
+        Math.max(
+            120,
+            Math.min(
+                window.innerHeight * 0.27,
+                255
+            )
+        );
+
+    introParticles =
+        text.targets.map(
+            target => {
+
+                const angle =
+                    Math.random() *
+                    Math.PI *
+                    2;
+
+                const distance =
+                    200 +
+                    Math.random() *
+                    650;
+
+                return {
+
+                    x:
+                        window.innerWidth / 2 +
+                        Math.cos(angle) *
+                        distance,
+
+                    y:
+                        startY +
+                        Math.sin(angle) *
+                        distance,
+
+                    tx:
+                        startX +
+                        target.x,
+
+                    ty:
+                        startY +
+                        target.y,
+
+                    size:
+                        Math.random() *
+                        1.8 +
+                        0.7,
+
+                    delay:
+                        Math.random() *
+                        0.45
+                };
             }
-        }
+        );
+}
+
+function drawIntro(now) {
+
+    if (!introRunning) return;
+
+    introCtx.clearRect(
+        0,
+        0,
+        window.innerWidth,
+        window.innerHeight
+    );
+
+    const elapsed =
+        (now - introStart) /
+        1000;
+
+    /*
+       前 1.9 秒：
+       粒子逐渐汇聚成“抓号器”
+    */
+    const progress =
+        Math.min(
+            1,
+            Math.max(
+                0,
+                (elapsed - 0.05) /
+                1.65
+            )
+        );
+
+    const eased =
+        1 -
+        Math.pow(
+            1 - progress,
+            3
+        );
+
+    for (
+        const p of introParticles
+    ) {
+
+        const local =
+            Math.min(
+                1,
+                Math.max(
+                    0,
+                    (progress - p.delay) /
+                    (1 - p.delay)
+                )
+            );
+
+        const e =
+            1 -
+            Math.pow(
+                1 - local,
+                3
+            );
+
+        p.x +=
+            (
+                p.tx -
+                p.x
+            ) *
+            e *
+            0.045;
+
+        p.y +=
+            (
+                p.ty -
+                p.y
+            ) *
+            e *
+            0.045;
+
+        const alpha =
+            progress < 0.08
+                ? progress / 0.08
+                : elapsed > 2.4
+                    ? Math.max(
+                        0,
+                        1 -
+                        (elapsed - 2.4) /
+                        0.9
+                    )
+                    : 1;
+
+        if (alpha <= 0) continue;
+
+        ctx; /* 保留主画布上下文不变 */
+
+        introCtx.beginPath();
+
+        introCtx.arc(
+            p.x,
+            p.y,
+            p.size,
+            0,
+            Math.PI * 2
+        );
+
+        introCtx.fillStyle =
+            `rgba(
+                196,
+                181,
+                253,
+                ${alpha * 0.95}
+            )`;
+
+        introCtx.fill();
     }
 
-    function drawMeteors() {
-        for (let i = 0; i < meteors.length; i++) {
-            const m = meteors[i];
-            const len = m.len * (0.4 + m.life * 0.6);
+    if (elapsed > 3.35) {
+        introRunning = false;
+        introCtx.clearRect(
+            0,
+            0,
+            window.innerWidth,
+            window.innerHeight
+        );
+    }
+}
 
-            const sp = Math.hypot(m.vx, m.vy) || 1;
-            const tx = m.x - (m.vx / sp) * len;
-            const ty = m.y - (m.vy / sp) * len;
 
-            const grad = ctx.createLinearGradient(tx, ty, m.x, m.y);
-            grad.addColorStop(0, "rgba(129,140,248,0)");
-            grad.addColorStop(0.55, "rgba(167,139,250," + (m.life * 0.45) + ")");
-            grad.addColorStop(1, "rgba(255,255,255," + (m.life * 1.0) + ")");
+/* =========================================================
+   主循环
+========================================================= */
 
-            ctx.strokeStyle = grad;
-            ctx.lineWidth = 2.0;
-            ctx.lineCap = "round";
+let lastTime = performance.now();
 
-            ctx.beginPath();
-            ctx.moveTo(tx, ty);
-            ctx.lineTo(m.x, m.y);
-            ctx.stroke();
+function animate(now) {
 
-            const gs = 24;
-            ctx.globalAlpha = m.life * 0.9;
-            ctx.drawImage(sprites[4], m.x - gs * 0.5, m.y - gs * 0.5, gs, gs);
-            ctx.globalAlpha = 1;
-        }
+    const delta =
+        Math.min(
+            now - lastTime,
+            32
+        );
+
+    lastTime = now;
+
+    ctx.clearRect(
+        0,
+        0,
+        window.innerWidth,
+        window.innerHeight
+    );
+
+    updateMouse();
+    updateTrail();
+
+    drawMouseGlow();
+    drawTrail();
+
+    for (const p of particles) {
+        updateParticle(p, now);
     }
 
-    function render(now) {
-        ctx.clearRect(0, 0, W, H);
+    drawConnections();
+    drawMouseConnections();
+    drawExplosions();
+    drawParticles();
 
-        ctx.globalCompositeOperation = "lighter";
+    drawIntro(now);
 
-        drawMouseGlow();
-        drawTrail();
-        drawConnections();
-        drawMouseLinks();
-        drawRipples();
-        drawSparks();
-        drawMeteors();
-        drawParticles(now);
+    requestAnimationFrame(animate);
+}
 
-        ctx.globalCompositeOperation = "source-over";
-        ctx.globalAlpha = 1;
-    }
 
-    function frame(now) {
-        if (running) {
-            const dt = Math.min(now - lastFrame, 34);
-            lastFrame = now;
+/* =========================================================
+   初始化
+========================================================= */
 
-            update(dt, now);
-            render(now);
-        } else {
-            lastFrame = now;
-        }
+resizeCanvas();
+setupIntroCanvas();
 
-        requestAnimationFrame(frame);
-    }
+window.addEventListener(
+    "resize",
+    setupIntroCanvas,
+    { passive: true }
+);
 
-    resize();
-    lastMeteor = performance.now();
-    requestAnimationFrame(frame);
-})();
+requestAnimationFrame(animate);
+
 </script>
 
 </body>

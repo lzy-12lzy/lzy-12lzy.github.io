@@ -111,6 +111,17 @@ button, a { -webkit-tap-highlight-color: transparent; }
     transition: opacity .8s var(--ease), visibility .8s var(--ease);
 }
 #intro.is-hidden { opacity: 0; visibility: hidden; }
+#intro:not(.is-hidden) {
+    animation: introFallbackHide .9s ease 4.2s forwards;
+}
+@keyframes introFallbackHide {
+    to {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+}
+
 .intro-core {
     position: relative;
     text-align: center;
@@ -1107,8 +1118,8 @@ function updateParticles(time) {
                 const tx = -ny;
                 const ty = nx;
 
-                const pull = influence*influence*(mobile()?.085:.11);
-                const swirl = influence*(mobile()?.010:.018);
+                const pull = influence*influence*(mobile() ? 0.085 : 0.11);
+                const swirl = influence*(mobile() ? 0.010 : 0.018);
 
                 p.vx += nx*pull + tx*swirl;
                 p.vy += ny*pull + ty*swirl;

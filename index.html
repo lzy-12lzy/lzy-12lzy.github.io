@@ -1,14 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>我的第一个网站</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>我的网站</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .box {
+            width: 90%;
+            max-width: 600px;
+            padding: 50px 30px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            margin-bottom: 15px;
+            font-size: 42px;
+        }
+
+        p {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            border: 0;
+            padding: 14px 30px;
+            font-size: 16px;
+            color: white;
+            background: #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+    </style>
 </head>
 
 <body>
 
-    <h1>你好！</h1>
-    <p>这是我的第一个网站。</p>
+    <div class="box">
+        <h1>欢迎来到我的网站</h1>
+
+        <p>这是我的第一个正式网页。</p>
+
+        <button onclick="alert('你好！欢迎来到我的网站！')">
+            点击我
+        </button>
+    </div>
 
 </body>
 </html>

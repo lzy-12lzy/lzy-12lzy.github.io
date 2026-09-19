@@ -1097,6 +1097,15 @@ a{
     color:#64748b;
 }
 
+
+.usage-steps{
+    margin-top:0;
+}
+
+.usage-steps .card{
+    min-height:170px;
+}
+
 @media(max-width:980px){
     .hero-container{
         grid-template-columns:1fr;
@@ -1285,6 +1294,59 @@ a{
     display:grid;
     grid-template-columns:repeat(3,1fr);
     gap:22px;
+}
+
+.card-link{
+    position:relative;
+    display:block;
+    color:inherit;
+    text-decoration:none;
+    cursor:pointer;
+    overflow:hidden;
+}
+
+.card-link::after{
+    content:"↗";
+    position:absolute;
+    top:28px;
+    right:28px;
+    width:32px;
+    height:32px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:10px;
+    background:rgba(255,255,255,.025);
+    color:rgba(196,181,253,.72);
+    font-size:14px;
+    transition:transform .45s ease, background .45s ease, color .45s ease, border-color .45s ease;
+}
+
+.card-link::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:inherit;
+    background:radial-gradient(28% 32% at 78% 18%,rgba(139,92,246,.16),transparent 78%);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .45s ease;
+}
+
+.card-link:hover::after{
+    transform:translate(2px,-2px);
+    background:rgba(139,92,246,.10);
+    border-color:rgba(139,92,246,.24);
+    color:#ddd6fe;
+}
+
+.card-link:hover::before{
+    opacity:1;
+}
+
+html{
+    scroll-behavior:smooth;
 }
 
 .card{
@@ -1599,38 +1661,34 @@ footer{
 
         <div class="cards">
 
-            <div class="card reveal">
+            <a class="card reveal card-link" href="#what-is">
                 <div class="icon">01</div>
-                <h3>我的项目</h3>
-                <p>展示你的程序、网站、项目以及各种作品。</p>
-            </div>
+                <h3>什么是抓号器</h3>
+            </a>
 
-            <div class="card reveal">
+            <a class="card reveal card-link" href="#how-to-use">
                 <div class="icon">02</div>
-                <h3>我的服务</h3>
-                <p>展示你的产品、服务和功能。</p>
-            </div>
+                <h3>如何使用抓号器</h3>
+            </a>
 
-            <div class="card reveal">
+            <a class="card reveal card-link" href="#how-to-buy">
                 <div class="icon">03</div>
-                <h3>最新动态</h3>
-                <p>发布网站更新、新闻以及项目进展。</p>
-            </div>
+                <h3>如何购买抓号器</h3>
+            </a>
 
         </div>
     </div>
 </section>
 
-<section class="section" id="about">
+<section class="section" id="what-is">
     <div class="container">
 
         <div class="about-grid">
 
             <div class="reveal">
-                <div class="section-label">ABOUT</div>
-                <h2>关于抓号器</h2>
-                <p>这是抓号器的官方网站。</p>
-                <p>后面还可以继续加入更多页面、账号展示、功能介绍以及联系入口。</p>
+                <div class="section-label">WHAT IS</div>
+                <h2>什么是抓号器</h2>
+                <p>抓号器用于账号相关功能演示与授权测试。</p>
             </div>
 
             <div class="about-panel reveal">
@@ -1645,12 +1703,39 @@ footer{
     </div>
 </section>
 
-<section class="section contact" id="contact">
+<section class="section" id="how-to-use">
+    <div class="container">
+
+        <div class="section-title reveal">
+            <div class="section-label">HOW TO USE</div>
+            <h2>如何使用抓号器</h2>
+            <p>从了解功能、进入使用，到完成操作，后续可以在这里补充完整的使用说明。</p>
+        </div>
+
+        <div class="cards usage-steps">
+            <div class="card reveal">
+                <div class="icon">01</div>
+                <h3>下载上号器</h3>
+            </div>
+            <div class="card reveal">
+                <div class="icon">02</div>
+                <h3>打开上号器</h3>
+            </div>
+            <div class="card reveal">
+                <div class="icon">03</div>
+                <h3>完成上号</h3>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<section class="section contact" id="how-to-buy">
     <div class="container">
 
         <div class="contact-box reveal">
-            <h2>联系我们</h2>
-            <p>欢迎来到抓号器官网。后续可以在这里添加联系方式、提交建议和更多功能。</p>
+            <h2>如何购买抓号器</h2>
+            <p>如需了解购买方式和相关入口，可在这里查看后续提供的官方购买信息。</p>
             <a href="mailto:example@example.com" class="btn btn-primary">联系我们</a>
         </div>
 

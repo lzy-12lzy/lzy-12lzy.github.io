@@ -62,6 +62,8 @@ a{
 }
 
 .background-glow{
+    transform:translate3d(0,var(--scroll-bg-y,0px),0);
+    will-change:transform;
     position:fixed;
     inset:0;
     z-index:-1;
@@ -536,6 +538,8 @@ a{
 
 .hero-content{
     animation:heroIn .9s var(--ease) both;
+    transform:translate3d(0,var(--scroll-front-y,0px),0);
+    will-change:transform;
 }
 
 @keyframes heroIn{
@@ -573,10 +577,47 @@ a{
 }
 
 .gradient-text{
+    position:relative;
+    display:inline-block;
+    isolation:isolate;
+    filter:saturate(108%);
     background:linear-gradient(135deg,#60a5fa,#8b5cf6,#d946ef);
     -webkit-background-clip:text;
     background-clip:text;
     color:transparent;
+}
+
+.gradient-text::after{
+    content:"";
+    position:absolute;
+    inset:18% -7% -12%;
+    z-index:-1;
+    pointer-events:none;
+    border-radius:999px;
+    background:
+        radial-gradient(ellipse at 32% 44%,
+            rgba(96,165,250,.22),
+            transparent 54%
+        ),
+        radial-gradient(ellipse at 72% 50%,
+            rgba(167,139,250,.20),
+            transparent 58%
+        );
+    filter:blur(18px);
+    opacity:.46;
+    transform:scale(.96);
+    animation:titleGlowBreath 7s ease-in-out infinite;
+}
+
+@keyframes titleGlowBreath{
+    0%,100%{
+        opacity:.32;
+        transform:scale(.95);
+    }
+    50%{
+        opacity:.52;
+        transform:scale(1.015);
+    }
 }
 
 .hero p{
@@ -622,6 +663,8 @@ a{
     display:flex;
     justify-content:center;
     perspective:1000px;
+    transform:translate3d(0,var(--scroll-mid-y,0px),0);
+    will-change:transform;
 }
 
 .glass-card{
@@ -647,9 +690,15 @@ a{
     /* 更细、更柔和的边缘 */
     border:1px solid rgba(211,222,255,.118);
 
+    --card-shadow-x:0px;
+    --card-shadow-y:0px;
+    --card-shadow-blue:.065;
+    --card-shadow-purple:.028;
+
     box-shadow:
-        0 26px 76px rgba(2,6,23,.30),
-        0 10px 34px rgba(59,130,246,.065),
+        var(--card-shadow-x,0px) calc(26px + var(--card-shadow-y,0px)) 76px rgba(2,6,23,.30),
+        calc(var(--card-shadow-x,0px) * .55) calc(10px + var(--card-shadow-y,0px) * .30) 34px rgba(59,130,246,var(--card-shadow-blue,.065)),
+        0 0 46px rgba(139,92,246,var(--card-shadow-purple,.028)),
         inset 0 1px 0 rgba(255,255,255,.095),
         inset 0 0 0 1px rgba(129,140,248,.018);
 
@@ -657,6 +706,7 @@ a{
     -webkit-backdrop-filter:blur(18px) saturate(124%);
 
     overflow:hidden;
+    contain:paint;
     transform-style:preserve-3d;
     transition:
         transform .28s ease,
@@ -671,8 +721,9 @@ a{
 .glass-card:hover{
     border-color:rgba(220,228,255,.155);
     box-shadow:
-        0 30px 86px rgba(2,6,23,.34),
-        0 14px 42px rgba(59,130,246,.085),
+        var(--card-shadow-x,0px) calc(30px + var(--card-shadow-y,0px)) 86px rgba(2,6,23,.34),
+        calc(var(--card-shadow-x,0px) * .55) calc(14px + var(--card-shadow-y,0px) * .30) 42px rgba(59,130,246,var(--card-shadow-blue,.085)),
+        0 0 52px rgba(139,92,246,var(--card-shadow-purple,.035)),
         inset 0 1px 0 rgba(255,255,255,.115),
         inset 0 0 0 1px rgba(129,140,248,.024);
 }
@@ -697,6 +748,14 @@ a{
             transparent 18%,
             transparent 77%,
             rgba(129,140,248,.050) 100%
+        ),
+        conic-gradient(
+            from var(--card-edge-angle, 135deg) at 50% 50%,
+            rgba(96,165,250,var(--card-edge-blue-a,.012)) 0deg,
+            transparent 72deg,
+            rgba(167,139,250,var(--card-edge-purple-a,.012)) 158deg,
+            transparent 250deg,
+            rgba(96,165,250,var(--card-edge-blue-a,.008)) 360deg
         );
 
     opacity:.70;
@@ -710,8 +769,18 @@ a{
     pointer-events:none;
     border-radius:inherit;
 
-    /* 把外部蓝紫光晕轻轻反射进卡片 */
+    /* 外部蓝紫光晕 + 粒子邻近环境光：不增加 DOM，不增加 Canvas */
     background:
+        radial-gradient(
+            34% 26% at var(--card-light-x,50%) var(--card-light-y,50%),
+            rgb(96 165 250 / var(--card-blue-a,0)),
+            transparent 78%
+        ),
+        radial-gradient(
+            38% 28% at var(--card-light-x,50%) var(--card-light-y,50%),
+            rgb(167 139 250 / var(--card-purple-a,0)),
+            transparent 80%
+        ),
         radial-gradient(40% 28% at 8% 8%,
             rgba(96,165,250,.095),
             transparent 76%
@@ -726,7 +795,7 @@ a{
         );
 
     filter:blur(32px);
-    opacity:.48;
+    opacity:.50;
     mix-blend-mode:screen;
 }
 
@@ -985,7 +1054,14 @@ footer{
 @media(prefers-reduced-motion:reduce){
     html{scroll-behavior:auto}
 
+    :root{
+        --scroll-bg-y:0px;
+        --scroll-mid-y:0px;
+        --scroll-front-y:0px;
+    }
+
     .background-glow,
+    .gradient-text::after,
     .background-glow::before,
     .background-glow::after,
     .glow,
@@ -1006,6 +1082,10 @@ footer{
 }
 
 @media (max-width:700px){
+    .hero-content{
+        transform:translate3d(0,var(--scroll-front-y,0px),0) scale(.995);
+    }
+
     .glass-card{
         backdrop-filter:blur(14px) saturate(118%);
         -webkit-backdrop-filter:blur(14px) saturate(118%);
@@ -1190,6 +1270,24 @@ window.addEventListener("scroll", () => {
     navbar.classList.toggle("scrolled", window.scrollY > 40);
 }, { passive: true });
 
+function updateScrollParallax(){
+    parallaxFrame = 0;
+    const y = Math.max(0, window.scrollY || 0);
+    const capped = Math.min(y, 1400);
+
+    rootStyle.setProperty("--scroll-bg-y", `${(-capped * 0.045).toFixed(2)}px`);
+    rootStyle.setProperty("--scroll-mid-y", `${(-capped * 0.072).toFixed(2)}px`);
+    rootStyle.setProperty("--scroll-front-y", `${(-capped * 0.100).toFixed(2)}px`);
+}
+
+window.addEventListener("scroll", () => {
+    if (!parallaxFrame) {
+        parallaxFrame = requestAnimationFrame(updateScrollParallax);
+    }
+}, { passive: true });
+
+updateScrollParallax();
+
 const revealObserver = new IntersectionObserver(entries => {
     for (const entry of entries) {
         if (entry.isIntersecting) {
@@ -1208,14 +1306,19 @@ document.querySelectorAll(".reveal").forEach(el => {
 ========================================================= */
 const heroCardArea = document.getElementById("heroCardArea");
 const heroCard = document.getElementById("heroCard");
+const heroTitle = document.querySelector(".hero h1");
+const rootStyle = document.documentElement.style;
+let parallaxFrame = 0;
 
 if (heroCardArea && heroCard) {
     heroCardArea.addEventListener("pointermove", event => {
         if (window.innerWidth <= 850) return;
 
-        const rect = heroCardArea.getBoundingClientRect();
-        const px = (event.clientX - rect.left) / rect.width;
-        const py = (event.clientY - rect.top) / rect.height;
+        const areaRect = heroCardArea.getBoundingClientRect();
+        const cardRect = heroCard.getBoundingClientRect();
+
+        const px = (event.clientX - areaRect.left) / areaRect.width;
+        const py = (event.clientY - areaRect.top) / areaRect.height;
 
         const rotateY = (px - 0.5) * 11;
         const rotateX = (0.5 - py) * 11;
@@ -1225,11 +1328,32 @@ if (heroCardArea && heroCard) {
              rotateX(${rotateX}deg)
              rotateY(${rotateY}deg)
              translateY(-6px)`;
+
+        const localX = ((event.clientX - cardRect.left) / cardRect.width) * 100;
+        const localY = ((event.clientY - cardRect.top) / cardRect.height) * 100;
+        heroCard.style.setProperty("--card-light-x", `${Math.max(0, Math.min(100, localX))}%`);
+        heroCard.style.setProperty("--card-light-y", `${Math.max(0, Math.min(100, localY))}%`);
+        heroCard.style.setProperty("--card-blue-a", ".045");
+        heroCard.style.setProperty("--card-purple-a", ".070");
+
+        const sx = (0.5 - px) * 18;
+        const sy = (0.5 - py) * 12;
+        const edgePower = Math.min(1, Math.hypot(px - .5, py - .5) * 1.45);
+        heroCard.style.setProperty("--card-shadow-x", `${sx.toFixed(2)}px`);
+        heroCard.style.setProperty("--card-shadow-y", `${sy.toFixed(2)}px`);
+        heroCard.style.setProperty("--card-shadow-blue", (0.065 + edgePower * 0.045).toFixed(4));
+        heroCard.style.setProperty("--card-shadow-purple", (0.028 + edgePower * 0.032).toFixed(4));
     });
 
     heroCardArea.addEventListener("pointerleave", () => {
         heroCard.style.transform =
             "perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)";
+        heroCard.style.setProperty("--card-blue-a", ".0");
+        heroCard.style.setProperty("--card-purple-a", ".0");
+        heroCard.style.setProperty("--card-shadow-x", "0px");
+        heroCard.style.setProperty("--card-shadow-y", "0px");
+        heroCard.style.setProperty("--card-shadow-blue", ".065");
+        heroCard.style.setProperty("--card-shadow-purple", ".028");
     });
 }
 
@@ -1254,9 +1378,23 @@ const state = {
     height: window.innerHeight,
     particles: [],
     sparks: [],
+    dust: [],
+    airDust: [],
     ripples: [],
     shootingStars: [],
     trail: [],
+    cardLightTimer: 0,
+    titleAvoidTimer: 0,
+    titleRect: null,
+    cardLight: {
+        x: 50,
+        y: 50,
+        blue: 0,
+        purple: 0,
+        edgeBlue: 0.012,
+        edgePurple: 0.012,
+        edgeAngle: 135
+    },
     last: performance.now(),
     lastMeteor: 0,
     running: true,
@@ -1270,6 +1408,9 @@ const state = {
         active: false
     }
 };
+
+window.__glassMouseX = state.mouse.x;
+window.__glassMouseY = state.mouse.y;
 
 const isMobile = () => window.innerWidth <= 700;
 const dpr = () => Math.min(window.devicePixelRatio || 1, 1.5);
@@ -1289,6 +1430,7 @@ function resizeCanvas() {
     );
 
     createParticles();
+    createAmbientDust();
 }
 
 window.addEventListener("resize", resizeCanvas, { passive: true });
@@ -1300,6 +1442,8 @@ window.addEventListener("pointermove", event => {
 
     m.tx = event.clientX;
     m.ty = event.clientY;
+    window.__glassMouseX = event.clientX;
+    window.__glassMouseY = event.clientY;
     m.vx = m.tx - oldX;
     m.vy = m.ty - oldY;
     m.active = true;
@@ -1331,6 +1475,25 @@ function particleCount() {
 }
 
 
+function createAmbientDust(){
+    state.airDust.length = 0;
+    const total = isMobile() ? 12 : 26;
+
+    for (let i = 0; i < total; i++) {
+        state.airDust.push({
+            x: Math.random() * state.width,
+            y: Math.random() * state.height,
+            vx: (Math.random() - 0.5) * 0.05,
+            vy: (Math.random() - 0.5) * 0.04,
+            radius: 0.22 + Math.random() * 0.52,
+            alpha: 0.035 + Math.random() * 0.060,
+            phase: Math.random() * Math.PI * 2,
+            hue: Math.random() < 0.5 ? "blue" : "violet"
+        });
+    }
+}
+
+
 function createParticles() {
     state.particles.length = 0;
 
@@ -1351,11 +1514,15 @@ function createParticles() {
             vy: (Math.random() - 0.5) * (0.20 + depth * 0.24),
 
             depth,
-            radius: 0.72 + depth * 2.00,
-            alpha: 0.16 + depth * 0.45,
+            radius: 0.68 + Math.pow(depth, 1.15) * 2.45,
+            alpha: 0.15 + Math.pow(depth, 1.18) * 0.50,
 
             phase: Math.random() * Math.PI * 2,
+            seed: Math.random() * 1000,
             twinkle: 0.5 + Math.random() * 1.3,
+            titleAvoid: 0,
+            trailTimer: 0,
+            motionTrail: depth > 0.84 ? [] : null,
 
             hue: Math.random() < 0.22
                 ? "pink"
@@ -1403,6 +1570,23 @@ function createExplosion(x, y) {
         });
     }
 
+    /* 细小星尘：爆发后向下缓慢回落，数量很少，避免增加常驻开销 */
+    for (let i = 0; i < (isMobile() ? 10 : 18); i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 0.45 + Math.random() * (isMobile() ? 1.15 : 1.55);
+
+        state.dust.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 0.35,
+            life: 1,
+            size: 0.35 + Math.random() * 0.85,
+            phase: Math.random() * Math.PI * 2,
+            hue: Math.random() < 0.55 ? "violet" : "blue"
+        });
+    }
+
     const pushRadius = isMobile() ? 180 : 250;
 
     for (const p of state.particles) {
@@ -1446,8 +1630,34 @@ function maybeSpawnMeteor(now) {
 }
 
 
+function updateTitleRect(dt){
+    if (!heroTitle || window.innerWidth <= 850) {
+        state.titleRect = null;
+        return;
+    }
+
+    state.titleAvoidTimer += dt;
+    if (state.titleAvoidTimer < 90 && state.titleRect) return;
+    state.titleAvoidTimer = 0;
+
+    const r = heroTitle.getBoundingClientRect();
+    state.titleRect = {
+        left:r.left - 44,
+        top:r.top - 34,
+        right:r.right + 44,
+        bottom:r.bottom + 34,
+        cx:(r.left + r.right) * .5,
+        cy:(r.top + r.bottom) * .5,
+        hw:(r.width * .5) + 44,
+        hh:(r.height * .5) + 34
+    };
+}
+
+
 function updateParticles(time, dt) {
     const m = state.mouse;
+
+    updateTitleRect(dt);
 
     m.x += (m.tx - m.x) * 0.18;
     m.y += (m.ty - m.y) * 0.18;
@@ -1498,6 +1708,25 @@ function updateParticles(time, dt) {
             }
         }
 
+        /* 标题避让：靠近标题时轻微向外推开，并降低重叠亮度 */
+        p.titleAvoid = 0;
+        const tr = state.titleRect;
+        if (tr && p.depth > 0.20) {
+            const nx = (p.x - tr.cx) / tr.hw;
+            const ny = (p.y - tr.cy) / tr.hh;
+            const norm = Math.hypot(nx, ny);
+
+            if (norm < 1.08) {
+                const influence = Math.pow(1 - Math.min(1, norm), 2);
+                const safe = Math.max(norm, 0.08);
+                const push = influence * (0.018 + p.depth * 0.028);
+
+                p.vx += (nx / safe) * push;
+                p.vy += (ny / safe) * push;
+                p.titleAvoid = influence;
+            }
+        }
+
         const homeDX = p.homeX - p.x;
         const homeDY = p.homeY - p.y;
 
@@ -1524,6 +1753,25 @@ function updateParticles(time, dt) {
         p.x += p.vx * (dt / 16.67);
         p.y += p.vy * (dt / 16.67);
 
+        if (p.motionTrail) {
+            p.trailTimer += dt;
+            if (p.trailTimer > 42) {
+                p.trailTimer = 0;
+                const speedNow = Math.hypot(p.vx, p.vy);
+                if (speedNow > 0.30) {
+                    p.motionTrail.push({ x:p.x, y:p.y, life:1 });
+                    if (p.motionTrail.length > 5) p.motionTrail.shift();
+                }
+            }
+
+            for (const t of p.motionTrail) {
+                t.life *= Math.pow(0.84, dt / 16.67);
+            }
+            while (p.motionTrail.length && p.motionTrail[0].life < 0.035) {
+                p.motionTrail.shift();
+            }
+        }
+
         const margin = 8;
 
         if (p.x < margin) {
@@ -1548,10 +1796,13 @@ function updateParticles(time, dt) {
     }
 
     updateSparks(dt);
+    updateAirDust(time, dt);
+    updateDust(time, dt);
     updateRipples(dt);
     updateTrail();
     maybeSpawnMeteor(time);
     updateMeteors(dt);
+    updateCardAmbientLight(time, dt);
 }
 
 
@@ -1573,6 +1824,168 @@ function updateSparks(dt) {
             state.sparks.splice(i, 1);
         }
     }
+}
+
+
+function updateAirDust(time, dt){
+    const step = dt / 16.67;
+
+    for (const d of state.airDust) {
+        d.x += d.vx * step;
+        d.y += d.vy * step;
+
+        if (d.x < -10) d.x = state.width + 10;
+        if (d.x > state.width + 10) d.x = -10;
+        if (d.y < -10) d.y = state.height + 10;
+        if (d.y > state.height + 10) d.y = -10;
+    }
+}
+
+
+function updateDust(time, dt) {
+    const step = dt / 16.67;
+
+    for (let i = state.dust.length - 1; i >= 0; i--) {
+        const d = state.dust[i];
+
+        d.vy += 0.018 * step;
+        d.vx += Math.sin(time * 0.0012 + d.phase) * 0.002 * step;
+
+        d.x += d.vx * step;
+        d.y += d.vy * step;
+
+        d.vx *= Math.pow(0.985, step);
+        d.vy *= Math.pow(0.987, step);
+        d.life -= 0.015 * step;
+
+        if (d.life <= 0) {
+            state.dust.splice(i, 1);
+        }
+    }
+}
+
+
+
+function mIsActive(){
+    return state.mouse.active;
+}
+
+function updateCardAmbientLight(time, dt) {
+    if (!heroCard) return;
+
+    /* 每隔约 70ms 更新一次 DOM 光晕，避免每帧写 DOM */
+    state.cardLightTimer += dt;
+    if (state.cardLightTimer < 70) return;
+    state.cardLightTimer = 0;
+
+    const rect = heroCard.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+
+    const margin = 150;
+    const left = rect.left - margin;
+    const right = rect.right + margin;
+    const top = rect.top - margin;
+    const bottom = rect.bottom + margin;
+
+    let best = null;
+    let bestScore = 0;
+
+    for (const p of state.particles) {
+        if (p.depth < 0.64) continue;
+        if (p.x < left || p.x > right || p.y < top || p.y > bottom) continue;
+
+        const insideX = p.x >= rect.left && p.x <= rect.right;
+        const insideY = p.y >= rect.top && p.y <= rect.bottom;
+        const inside = insideX && insideY;
+
+        if (inside) continue;
+
+        const dx =
+            p.x < rect.left ? rect.left - p.x :
+            p.x > rect.right ? p.x - rect.right : 0;
+        const dy =
+            p.y < rect.top ? rect.top - p.y :
+            p.y > rect.bottom ? p.y - rect.bottom : 0;
+
+        const distance = Math.hypot(dx, dy);
+        const influence = Math.max(0, 1 - distance / margin);
+        const score = influence * influence * p.depth;
+
+        if (score > bestScore) {
+            bestScore = score;
+            best = p;
+        }
+    }
+
+    let targetX = 50;
+    let targetY = 50;
+    let targetBlue = 0;
+    let targetPurple = 0;
+    let targetEdgeBlue = 0.012;
+    let targetEdgePurple = 0.012;
+    let targetEdgeAngle = 135;
+
+    if (best) {
+        targetX = Math.max(0, Math.min(100, ((best.x - rect.left) / rect.width) * 100));
+        targetY = Math.max(0, Math.min(100, ((best.y - rect.top) / rect.height) * 100));
+
+        const intensity = Math.min(0.095, bestScore * 0.115);
+        if (best.hue === "blue") {
+            targetBlue = intensity;
+            targetEdgeBlue = 0.018 + bestScore * 0.080;
+        } else if (best.hue === "pink") {
+            targetPurple = intensity * 0.78;
+            targetEdgePurple = 0.018 + bestScore * 0.070;
+        } else {
+            targetPurple = intensity;
+            targetEdgePurple = 0.018 + bestScore * 0.080;
+        }
+
+        const edgeDx = best.x - (rect.left + rect.width / 2);
+        const edgeDy = best.y - (rect.top + rect.height / 2);
+        targetEdgeAngle = Math.atan2(edgeDy, edgeDx) * 180 / Math.PI + 90;
+    }
+
+    /* 鼠标本身也是一盏非常柔和的局部光源 */
+    if (mIsActive()) {
+        const mx = window.__glassMouseX;
+        const my = window.__glassMouseY;
+        const mdx = mx - (rect.left + rect.width / 2);
+        const mdy = my - (rect.top + rect.height / 2);
+        const mouseDist = Math.hypot(mdx, mdy);
+        const mouseInfluence = Math.max(0, 1 - mouseDist / (Math.max(rect.width, rect.height) * 0.95));
+
+        if (mouseInfluence > 0) {
+            const mxPct = Math.max(0, Math.min(100, ((mx - rect.left) / rect.width) * 100));
+            const myPct = Math.max(0, Math.min(100, ((my - rect.top) / rect.height) * 100));
+            const mouseA = mouseInfluence * mouseInfluence * 0.045;
+
+            targetX = targetX * 0.65 + mxPct * 0.35;
+            targetY = targetY * 0.65 + myPct * 0.35;
+            targetBlue = Math.min(0.09, targetBlue + mouseA * 0.75);
+            targetPurple = Math.min(0.09, targetPurple + mouseA * 0.55);
+            targetEdgeBlue += mouseA * 0.80;
+            targetEdgePurple += mouseA * 0.65;
+            targetEdgeAngle = Math.atan2(mdy, mdx) * 180 / Math.PI + 90;
+        }
+    }
+
+    state.cardLight.x += (targetX - state.cardLight.x) * 0.18;
+    state.cardLight.y += (targetY - state.cardLight.y) * 0.18;
+    state.cardLight.blue += (targetBlue - state.cardLight.blue) * 0.18;
+    state.cardLight.purple += (targetPurple - state.cardLight.purple) * 0.18;
+
+    heroCard.style.setProperty("--card-light-x", `${state.cardLight.x}%`);
+    heroCard.style.setProperty("--card-light-y", `${state.cardLight.y}%`);
+    state.cardLight.edgeBlue += (targetEdgeBlue - state.cardLight.edgeBlue) * 0.14;
+    state.cardLight.edgePurple += (targetEdgePurple - state.cardLight.edgePurple) * 0.14;
+    state.cardLight.edgeAngle += (targetEdgeAngle - state.cardLight.edgeAngle) * 0.14;
+
+    heroCard.style.setProperty("--card-blue-a", state.cardLight.blue.toFixed(4));
+    heroCard.style.setProperty("--card-purple-a", state.cardLight.purple.toFixed(4));
+    heroCard.style.setProperty("--card-edge-blue-a", state.cardLight.edgeBlue.toFixed(4));
+    heroCard.style.setProperty("--card-edge-purple-a", state.cardLight.edgePurple.toFixed(4));
+    heroCard.style.setProperty("--card-edge-angle", `${state.cardLight.edgeAngle.toFixed(1)}deg`);
 }
 
 
@@ -1652,13 +2065,27 @@ function drawMouseGlow() {
         m.x, m.y, radius
     );
 
-    g.addColorStop(0, "rgba(129,140,248,.11)");
-    g.addColorStop(.35, "rgba(139,92,246,.045)");
+    g.addColorStop(0, "rgba(224,231,255,.075)");
+    g.addColorStop(.13, "rgba(129,140,248,.12)");
+    g.addColorStop(.38, "rgba(139,92,246,.052)");
     g.addColorStop(1, "rgba(139,92,246,0)");
 
     ctx.beginPath();
     ctx.arc(m.x,m.y,radius,0,Math.PI*2);
     ctx.fillStyle = g;
+    ctx.fill();
+
+    const hotspot = ctx.createRadialGradient(
+        m.x, m.y, 0,
+        m.x, m.y, isMobile() ? 42 : 58
+    );
+    hotspot.addColorStop(0, "rgba(255,255,255,.07)");
+    hotspot.addColorStop(.35, "rgba(167,139,250,.035)");
+    hotspot.addColorStop(1, "rgba(167,139,250,0)");
+
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, isMobile() ? 42 : 58, 0, Math.PI * 2);
+    ctx.fillStyle = hotspot;
     ctx.fill();
 }
 
@@ -1711,6 +2138,24 @@ function drawAmbientWave(time) {
 }
 
 
+function drawMouseMemory(){
+    if (state.trail.length < 3) return;
+
+    const total = state.trail.length;
+    for (let i = 0; i < total; i += 3) {
+        const t = state.trail[i];
+        const age = i / total;
+        const r = 7 + (1 - age) * 15;
+        const a = t.alpha * (1 - age) * 0.055;
+
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(167,139,250,${a})`;
+        ctx.fill();
+    }
+}
+
+
 function drawTrail() {
     if (state.trail.length < 2) return;
 
@@ -1735,7 +2180,7 @@ function drawTrail() {
 }
 
 
-function drawConnections() {
+function drawConnections(time) {
     const limit = isMobile() ? 92 : 118;
     const maxLinks = isMobile() ? 130 : 320;
 
@@ -1760,15 +2205,28 @@ function drawConnections() {
                 const distance = Math.sqrt(d2);
                 const alpha =
                     (1 - distance / limit) *
-                    (0.05 + ((a.depth + b.depth) * 0.035));
+                    (0.06 + ((a.depth + b.depth) * 0.040));
 
                 ctx.beginPath();
                 ctx.moveTo(a.x,a.y);
                 ctx.lineTo(b.x,b.y);
                 ctx.strokeStyle =
                     `rgba(129,140,248,${alpha})`;
-                ctx.lineWidth = a.depth > .65 ? 1.25 : .88;
+                ctx.lineWidth = a.depth > .70 ? 1.34 : .90;
                 ctx.stroke();
+
+                /* 少量沿连线移动的微型光点：让网络产生“数据流动感” */
+                if ((links % 7 === 0) && (a.depth + b.depth) > 1.05) {
+                    const phase = ((time * 0.00022 + a.seed * .071 + b.seed * .043) % 1 + 1) % 1;
+                    const fx = a.x + (b.x - a.x) * phase;
+                    const fy = a.y + (b.y - a.y) * phase;
+                    const fa = (1 - distance / limit) * 0.34;
+
+                    ctx.beginPath();
+                    ctx.arc(fx, fy, a.depth > .78 ? 1.12 : .85, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(239,230,255,${fa})`;
+                    ctx.fill();
+                }
 
                 links++;
                 if (links >= maxLinks) return;
@@ -1799,14 +2257,16 @@ function drawMouseLinks() {
             ctx.lineTo(m.x,m.y);
             ctx.strokeStyle =
                 `rgba(192,132,252,${alpha})`;
-            ctx.lineWidth = p.depth > .65 ? 1.18 : .86;
+            ctx.lineWidth = p.depth > .70 ? 1.22 : .88;
             ctx.stroke();
         }
     }
 }
 
 
-function drawParticles(time) {
+function drawParticles(time){
+    const m = state.mouse;
+
     for (const p of state.particles) {
         const twinkle =
             0.80 +
@@ -1815,16 +2275,78 @@ function drawParticles(time) {
                 p.phase
             ) * 0.20;
 
-        /* 粒子主体稍微加粗，光晕反而收紧，视觉会更利落 */
-        const radius = p.radius * (0.95 + twinkle * .10);
-        const glow = radius * (p.depth > .65 ? 4.4 : 2.95);
+        const depth = p.depth;
+
+        /* 近景三档：让真正的前景粒子比普通近景再突出一点，但不整屏发白 */
+        const tier = depth > .90 ? 3 : depth > .76 ? 2 : depth > .62 ? 1 : 0;
+
+        let tierRadius = 1;
+        let tierAlpha = 1;
+        let tierGlow = 1;
+
+        if (tier === 3) {
+            tierRadius = 1.08;
+            tierAlpha = 1.18;
+            tierGlow = 1.12;
+        } else if (tier === 2) {
+            tierRadius = 1.045;
+            tierAlpha = 1.12;
+            tierGlow = 1.07;
+        } else if (tier === 1) {
+            tierRadius = 1.01;
+            tierAlpha = 1.07;
+            tierGlow = 1.03;
+        } else {
+            tierRadius = .985;
+            tierAlpha = .96;
+            tierGlow = .94;
+        }
+
+        /* 鼠标局部景深：只放大靠近鼠标的小区域 */
+        let focus = 0;
+        if (m.active) {
+            const dx = m.x - p.x;
+            const dy = m.y - p.y;
+            const dist = Math.hypot(dx, dy);
+            const focusRadius = isMobile() ? 115 : 155;
+
+            if (dist < focusRadius) {
+                const t = 1 - dist / focusRadius;
+                focus = t * t;
+            }
+        }
+
+        const focusRadiusScale = 1 + focus * 0.09;
+        const focusAlphaScale = 1 + focus * 0.10;
+        const focusGlowScale = 1 + focus * 0.10;
+
+        /* 近景外光缓慢呼吸，中远景几乎不动 */
+        const breath = tier > 0
+            ? 0.91 +
+              Math.sin(time * (0.0010 + tier * 0.00018) + p.phase) * 0.09
+            : 0.98;
+
+        const radius =
+            p.radius *
+            (0.95 + twinkle * .10) *
+            tierRadius *
+            focusRadiusScale;
+
+        const glow =
+            (tier > 0 ? radius * 4.55 : radius * 2.72) *
+            tierGlow *
+            focusGlowScale *
+            breath;
+
+        const titleDim = 1 - p.titleAvoid * 0.72;
 
         const alpha =
             Math.min(
-                1,
-                p.alpha * twinkle
+                .96,
+                p.alpha * twinkle * tierAlpha * focusAlphaScale * titleDim
             );
 
+        /* 基础柔光 */
         const gradient =
             ctx.createRadialGradient(
                 p.x,p.y,0,
@@ -1835,49 +2357,113 @@ function drawParticles(time) {
             0,
             colorFor(p,alpha)
         );
-
         gradient.addColorStop(
-            1,
-            colorFor(p,0)
+            tier > 0 ? .20 : .28,
+            colorFor(p,alpha * (tier > 0 ? .42 : .26))
         );
+        gradient.addColorStop(1, colorFor(p,0));
 
         ctx.beginPath();
-        ctx.arc(
-            p.x,
-            p.y,
-            glow,
-            0,
-            Math.PI*2
-        );
+        ctx.arc(p.x,p.y,glow,0,Math.PI*2);
         ctx.fillStyle = gradient;
         ctx.fill();
 
+        if (tier > 0) {
+            /* 外层空气光：只比普通光晕稍亮，主要靠呼吸感体现 */
+            const outerRim = radius * (1.46 + tier * .08);
+            const outerRimGradient =
+                ctx.createRadialGradient(
+                    p.x,p.y,radius * .72,
+                    p.x,p.y,outerRim
+                );
+
+            outerRimGradient.addColorStop(0, colorFor(p,0));
+            outerRimGradient.addColorStop(
+                .62,
+                colorFor(p,Math.min(.032,alpha*.050*breath))
+            );
+            outerRimGradient.addColorStop(
+                .86,
+                colorFor(p,Math.min(.10 + tier*.008,alpha*.115*breath))
+            );
+            outerRimGradient.addColorStop(1, colorFor(p,0));
+
+            ctx.beginPath();
+            ctx.arc(p.x,p.y,outerRim,0,Math.PI*2);
+            ctx.fillStyle = outerRimGradient;
+            ctx.fill();
+
+            /* 内层亮心：随景深逐级增强 */
+            const innerGlow = radius * (.88 + tier*.045);
+            const innerGradient =
+                ctx.createRadialGradient(
+                    p.x,p.y,0,
+                    p.x,p.y,innerGlow
+                );
+
+            innerGradient.addColorStop(
+                0,
+                `rgba(255,255,255,${Math.min(.25 + tier*.018,alpha*(.30 + tier*.028))})`
+            );
+            innerGradient.addColorStop(
+                .32,
+                `rgba(244,242,255,${Math.min(.15 + tier*.012,alpha*(.19 + tier*.018))})`
+            );
+            innerGradient.addColorStop(
+                .72,
+                colorFor(p,Math.min(.048 + tier*.006,alpha*.075))
+            );
+            innerGradient.addColorStop(1, colorFor(p,0));
+
+            ctx.beginPath();
+            ctx.arc(p.x,p.y,innerGlow,0,Math.PI*2);
+            ctx.fillStyle = innerGradient;
+            ctx.fill();
+        }
+
         /* 清晰亮核 */
         ctx.beginPath();
-        ctx.arc(
-            p.x,
-            p.y,
-            radius,
-            0,
-            Math.PI*2
-        );
+        ctx.arc(p.x,p.y,radius,0,Math.PI*2);
         ctx.fillStyle =
-            `rgba(239,237,255,${Math.min(1,alpha+.22)})`;
+            `rgba(244,242,255,${Math.min(.93,alpha+.21 + focus*.035)})`;
         ctx.fill();
 
-        /* 近景粒子增加一点中心高光 */
-        if (p.depth > .50) {
+        if (tier > 0) {
+            /* 中心高光：第三档最清晰，但面积仍然很小 */
+            const coreScale = tier === 3 ? .285 : tier === 2 ? .27 : .25;
             ctx.beginPath();
             ctx.arc(
-                p.x,
-                p.y,
-                Math.max(.50, radius * .32),
-                0,
-                Math.PI*2
+                p.x,p.y,
+                Math.max(.60,radius*coreScale),
+                0,Math.PI*2
             );
             ctx.fillStyle =
-                `rgba(255,255,255,${Math.min(.92,alpha+.16)})`;
+                `rgba(255,255,255,${Math.min(.82,alpha*(.68 + tier*.035) + focus*.04)})`;
             ctx.fill();
+
+            /* 很细的冷色边缘 */
+            ctx.beginPath();
+            ctx.arc(
+                p.x,p.y,
+                radius*(1.22 + tier*.025),
+                0,Math.PI*2
+            );
+            ctx.strokeStyle =
+                colorFor(p,Math.min(.13 + tier*.008,alpha*.105));
+            ctx.lineWidth = tier === 3 ? .60 : .5;
+            ctx.stroke();
+
+            if (tier >= 2) {
+                ctx.beginPath();
+                ctx.arc(
+                    p.x,p.y,
+                    Math.max(.30,radius*(tier === 3 ? .105 : .095)),
+                    0,Math.PI*2
+                );
+                ctx.fillStyle =
+                    `rgba(255,255,255,${Math.min(.56,alpha*(.52 + tier*.025))})`;
+                ctx.fill();
+            }
         }
     }
 }
@@ -1900,6 +2486,66 @@ function drawSparks() {
         ctx.lineWidth = s.size;
         ctx.lineCap = "round";
         ctx.stroke();
+    }
+}
+
+
+function drawAirDust(time){
+    for (const d of state.airDust) {
+        const pulse = 0.78 + Math.sin(time * 0.0011 + d.phase) * 0.22;
+        const alpha = d.alpha * pulse;
+
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.radius * (0.92 + pulse * 0.16), 0, Math.PI * 2);
+        ctx.fillStyle = d.hue === "blue"
+            ? `rgba(147,197,253,${alpha})`
+            : `rgba(196,181,253,${alpha})`;
+        ctx.fill();
+    }
+}
+
+
+function drawParticleTrails(){
+    if (isMobile()) return;
+
+    for (const p of state.particles) {
+        if (!p.motionTrail || p.motionTrail.length < 2) continue;
+
+        const speed = Math.hypot(p.vx, p.vy);
+        if (speed < 0.30) continue;
+
+        for (let i = 1; i < p.motionTrail.length; i++) {
+            const a = p.motionTrail[i - 1];
+            const b = p.motionTrail[i];
+            const alpha = a.life * (i / p.motionTrail.length) * 0.085;
+
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = colorFor(p, alpha);
+            ctx.lineWidth = p.depth > 0.92 ? 1.0 : 0.75;
+            ctx.lineCap = "round";
+            ctx.stroke();
+        }
+    }
+}
+
+
+function drawDust(time) {
+    for (const d of state.dust) {
+        const twinkle =
+            0.76 +
+            Math.sin(time * 0.0022 + d.phase) * 0.24;
+
+        const alpha = d.life * twinkle * 0.58;
+
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.size * (0.82 + twinkle * .18), 0, Math.PI * 2);
+        ctx.fillStyle =
+            d.hue === "blue"
+                ? `rgba(147,197,253,${alpha})`
+                : `rgba(196,181,253,${alpha})`;
+        ctx.fill();
     }
 }
 
@@ -1991,11 +2637,15 @@ function draw(now) {
 
     drawAmbientWave(now);
     drawMouseGlow();
+    drawAirDust(now);
+    drawMouseMemory();
     drawTrail();
-    drawConnections();
+    drawParticleTrails();
+    drawConnections(now);
     drawMouseLinks();
     drawRipples();
     drawSparks();
+    drawDust(now);
     drawMeteors();
     drawParticles(now);
 }
@@ -2022,6 +2672,19 @@ function frame(now) {
 
 
 /* 初始 */
+if (heroCard) {
+    heroCard.style.setProperty("--card-light-x", "50%");
+    heroCard.style.setProperty("--card-light-y", "50%");
+    heroCard.style.setProperty("--card-blue-a", "0");
+    heroCard.style.setProperty("--card-purple-a", "0");
+    heroCard.style.setProperty("--card-edge-blue-a", "0.012");
+    heroCard.style.setProperty("--card-edge-purple-a", "0.012");
+    heroCard.style.setProperty("--card-edge-angle", "135deg");
+    heroCard.style.setProperty("--card-shadow-x", "0px");
+    heroCard.style.setProperty("--card-shadow-y", "0px");
+    heroCard.style.setProperty("--card-shadow-blue", ".065");
+    heroCard.style.setProperty("--card-shadow-purple", ".028");
+}
 resizeCanvas();
 requestAnimationFrame(frame);
 </script>
